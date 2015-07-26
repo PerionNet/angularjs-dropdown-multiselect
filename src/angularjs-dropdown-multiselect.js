@@ -119,6 +119,10 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 angular.extend($scope.settings, $scope.extraSettings || []);
                 angular.extend($scope.externalEvents, $scope.events || []);
                 angular.extend($scope.texts, $scope.translationTexts);
+                
+                $scope.$watch('translationTexts', function(translationTexts) {
+                  angular.extend($scope.texts, translationTexts);
+                });
 
                 $scope.singleSelection = $scope.settings.selectionLimit === 1;
 
