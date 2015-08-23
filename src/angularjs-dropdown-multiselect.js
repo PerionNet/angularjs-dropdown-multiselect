@@ -39,12 +39,12 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
           template += '<li role="presentation" ng-repeat="option in options | filter: searchFilter">';
         }
 
-        template += '<a role="menuitem" tabindex="-1" ng-click="setSelectedItem(getPropertyForObject(option,settings.idProp))">';
+        template += '<a role="menuitem" tabindex="-1" ng-click="setSelectedItem(getPropertyForObject(option,settings.idProp))" tooltip="{{getPropertyForObject(option, settings.displayProp)}}"  ng-class="(getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit) ? \'shorten\' : \'\'" tooltip-enable="getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit">';
 
         if (checkboxes) {
           template += '<div class="checkbox"><label><input class="checkboxInput" type="checkbox" ng-click="checkboxClick($event, getPropertyForObject(option,settings.idProp))" ng-checked="isChecked(getPropertyForObject(option,settings.idProp))" /> {{getPropertyForObject(option, settings.displayProp)}}</label></div></a>';
         } else {
-          template += '<span data-ng-class="{\'glyphicon glyphicon-ok\': isChecked(getPropertyForObject(option,settings.idProp))}"></span> {{getPropertyForObject(option, settings.displayProp)}}</a>';
+          template += '<span data-ng-class="{\'glyphicon glyphicon-ok\': isChecked(getPropertyForObject(option,settings.idProp))}"></span> {{getPropertyForObject(option, settings.displayProp) | limitTo:settings.tooltipNumLimit}}</a>';
         }
 
         template += '</li>';
@@ -94,7 +94,8 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
           groupBy: $attrs.groupBy || undefined,
           groupByTextProvider: null,
           smartButtonMaxItems: 0,
-          smartButtonTextConverter: angular.noop
+          smartButtonTextConverter: angular.noop,
+		  tooltipNumLimit: 30
         };
 
         $scope.texts = {
