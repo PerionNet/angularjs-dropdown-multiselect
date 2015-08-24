@@ -95,7 +95,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
           groupByTextProvider: null,
           smartButtonMaxItems: 0,
           smartButtonTextConverter: angular.noop,
-		  tooltipNumLimit: 30
+          tooltipNumLimit: 30
         };
 
         $scope.texts = {
@@ -159,7 +159,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
             var parentFound = false;
 
             while (angular.isDefined(target) && target !== null && !parentFound) {
-              if (_.contains(target.className.split(' '), 'multiselect-parent') && !parentFound) {
+              if (typeof(target.className) === 'string' && _.contains(target.className.split(' '), 'multiselect-parent') && !parentFound) {
                 if(target === $dropdownTrigger) {
                   parentFound = true;
                 }
