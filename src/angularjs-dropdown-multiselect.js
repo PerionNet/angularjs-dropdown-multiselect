@@ -18,16 +18,17 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
         api: '='
       },
       template: function (element, attrs) {
+        var elementId = attrs.id;
         var checkboxes = attrs.checkboxes ? true : false;
         var groups = attrs.groupBy ? true : false;
 
         var template = '<div class="multiselect-parent btn-group dropdown-multiselect">';
-        template += '<button type="button" class="dropdown-toggle" ng-class="settings.buttonClasses" ng-click="toggleDropdown()">{{getButtonText()}}&nbsp;<span class="caret"></span></button>';
+        template += '<button id="' + elementId + '_btn" type="button" class="dropdown-toggle" ng-class="settings.buttonClasses" ng-click="toggleDropdown()">{{getButtonText()}}&nbsp;<span class="caret"></span></button>';
         template += '<ul class="dropdown-menu dropdown-menu-form" ng-style="{display: open ? \'block\' : \'none\', height : settings.scrollable ? settings.scrollableHeight : \'auto\' }" style="overflow: scroll" >';
-        template += '<li ng-show="settings.enableSearch"><div class="dropdown-header"><input type="text" class="form-control search-filter" style="width: 100%;" ng-model="searchFilter" placeholder="{{texts.searchPlaceholder}}" /></li>';
+        template += '<li ng-show="settings.enableSearch"><div class="dropdown-header"><input id="' + elementId + '_search" type="text" class="form-control search-filter" style="width: 100%;" ng-model="searchFilter" placeholder="{{texts.searchPlaceholder}}" /></li>';
         template += '<li ng-show="settings.enableSearch" class="divider"></li>';
-        template += '<li ng-hide="!settings.showCheckAll || settings.selectionLimit > 0"><a data-ng-click="selectAll()">{{texts.checkAll}}</a>';
-        template += '<li ng-show="settings.showUncheckAll" class="uncheckAll-separator"><a data-ng-click="deselectAll();">{{texts.uncheckAll}}</a></li>';
+        template += '<li ng-hide="!settings.showCheckAll || settings.selectionLimit > 0"><a data-ng-click="selectAll()" id="' + elementId + '_checkAll">{{texts.checkAll}}</a>';
+        template += '<li ng-show="settings.showUncheckAll" class="uncheckAll-separator"><a data-ng-click="deselectAll();" id="' + elementId + '_uncheckAll">{{texts.uncheckAll}}</a></li>';
         template += '<li ng-hide="(!settings.showCheckAll || settings.selectionLimit > 0) && !settings.showUncheckAll" class="divider"></li>';
         template += '<li class="divider" ng-show="settings.selectionLimit > 1"></li>';
         template += '<li role="presentation" ng-show="settings.selectionLimit > 1" class="selection-indicator"><a role="menuitem">{{selectedModel.length}} {{texts.selectionOf}} {{settings.selectionLimit}} {{texts.selectionCount}}</a></li>';
@@ -39,7 +40,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
           template += '<li role="presentation" ng-repeat="option in options | filter: searchFilter">';
         }
 
-        template += '<a role="menuitem" tabindex="-1" ng-click="setSelectedItem(getPropertyForObject(option,settings.idProp))" tooltip="{{getPropertyForObject(option, settings.displayProp)}}"  ng-class="(getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit) ? \'shorten\' : \'\'" tooltip-enable="getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit">';
+        template += '<a id="' + elementId + '_option{{option.id}}" role="menuitem" tabindex="-1" ng-click="setSelectedItem(getPropertyForObject(option,settings.idProp))" tooltip="{{getPropertyForObject(option, settings.displayProp)}}"  ng-class="(getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit) ? \'shorten\' : \'\'" tooltip-enable="getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit">';
 
         if (checkboxes) {
           template += '<div class="checkbox"><label><input class="checkboxInput" type="checkbox" ng-click="checkboxClick($event, getPropertyForObject(option,settings.idProp))" ng-checked="isChecked(getPropertyForObject(option,settings.idProp))" /> {{getPropertyForObject(option, settings.displayProp)}}</label></div></a>';
