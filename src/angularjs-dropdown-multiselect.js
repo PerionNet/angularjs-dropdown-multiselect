@@ -301,10 +301,11 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
         };
 
         $scope.externalEvents.onInitDone();
-
-        $scope.api.toggleDropdown = function() {
-          $scope.toggleDropdown();
-        };
+        if ($scope.api) {
+          $scope.api.toggleDropdown = function () {
+            $scope.toggleDropdown();
+          };
+        }
       }
     };
   }]);
