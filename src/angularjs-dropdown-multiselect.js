@@ -27,6 +27,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
         template += '<ul class="dropdown-menu dropdown-menu-form" ng-style="{display: open ? \'block\' : \'none\', height : settings.scrollable ? settings.scrollableHeight : \'auto\' }" style="overflow: scroll" >';
         template += '<li ng-show="settings.enableSearch"><div class="dropdown-header"><input id="' + elementId + '_search" type="text" class="form-control search-filter" style="width: 100%;" ng-model="searchFilter" placeholder="{{texts.searchPlaceholder}}" /></li>';
         template += '<li ng-show="settings.enableSearch" class="divider"></li>';
+        template += '<li ng-show="settings.enableEmpty"></li>';
         template += '<li ng-hide="!settings.showCheckAll || settings.selectionLimit > 0"><a data-ng-click="selectAll()" id="' + elementId + '_checkAll">{{texts.checkAll}}</a>';
         template += '<li ng-show="settings.showUncheckAll" class="uncheckAll-separator"><a data-ng-click="deselectAll();" id="' + elementId + '_uncheckAll">{{texts.uncheckAll}}</a></li>';
         template += '<li ng-hide="(!settings.showCheckAll || settings.selectionLimit > 0) && !settings.showUncheckAll" class="divider"></li>';
@@ -96,7 +97,8 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
           groupByTextProvider: null,
           smartButtonMaxItems: 0,
           smartButtonTextConverter: angular.noop,
-          tooltipNumLimit: 30
+          tooltipNumLimit: 30,
+          enableEmpty: false
         };
 
         $scope.texts = {
@@ -126,6 +128,10 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
 
         $scope.$watch('translationTexts', function(translationTexts) {
           angular.extend($scope.texts, translationTexts);
+        });
+
+        $scope.$watch('extraSettings', function(extraSettings) {
+          angular.extend($scope.settings, extraSettings);
         });
 
         $scope.singleSelection = $scope.settings.selectionLimit === 1;
