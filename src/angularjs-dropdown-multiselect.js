@@ -15,11 +15,14 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
         searchFilter: '=?',
         translationTexts: '=',
         groupBy: '@',
-        api: '='
+        api: '=',
+		isCustomDateOpen : '=',
+		open: '='
       },
       template: function (element, attrs) {
         var elementId = attrs.id;
         var checkboxes = attrs.checkboxes ? true : false;
+		var customdate = attrs.customdate ? true : false;
         var groups = attrs.groupBy ? true : false;
 
         var template = '<div class="multiselect-parent btn-group dropdown-multiselect">';
@@ -50,10 +53,17 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
         }
 
         template += '</li>';
-
-
+		  
         template += '</ul>';
         template += '</div>';
+		  
+		if (customdate) {
+			template += '<div class="filter-custom-dates ng-hide" ng-show="isCustomDateOpen">';	
+			template += '<button class="date-picker-close" ng-click="isCustomDateOpen = !isCustomDateOpen"></button>';
+			template += '<datepicker ng-model="datePickerStart" show-weeks="false" class="date-picker-wrapper start-date"></datepicker>';
+			template += '<datepicker ng-model="datePickerEnd" show-weeks="false" class="date-picker-wrapper end-date"></datepicker>';
+			template += '</div>';
+		}
 
         element.html(template);
       },
@@ -63,7 +73,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
         $scope.toggleDropdown = function () {
           $scope.open = !$scope.open;
         };
-
+		  
         $scope.checkboxClick = function ($event, id) {
           $scope.setSelectedItem(id);
           $event.stopImmediatePropagation();
@@ -109,7 +119,8 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
           searchPlaceholder: 'Search...',
           buttonDefaultText: 'Select',
           dynamicButtonTextSuffix: 'checked',
-          buttonAllDefaultText: null
+          buttonAllDefaultText: null,
+		  buttonCustomDateText: null
         };
 
         $scope.searchFilter = $scope.searchFilter || '';
@@ -192,11 +203,15 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
 
         $scope.getButtonText = function () {
           if ($scope.settings.dynamicTitle && ($scope.selectedModel.length > 0 || (angular.isObject($scope.selectedModel) && _.keys($scope.selectedModel).length > 0))) {
+			  
             if ($scope.settings.smartButtonMaxItems > 0) {
               var itemsText = [];
-
+				
               if(($scope.options.length === $scope.selectedModel.length) && ($scope.texts.buttonAllDefaultText)){
                 return $scope.texts.buttonAllDefaultText;
+              }
+			  if($scope.options[$scope.selectedModel.id] && $scope.options[$scope.selectedModel.id].value === "custom"){
+                return $scope.texts.buttonCustomDateText;
               }
 
               angular.forEach($scope.options, function (optionItem) {
@@ -206,7 +221,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
 
                   itemsText.push(converterResponse ? converterResponse : displayText);
                 }
-              });
+              });	
 
               if ($scope.selectedModel.length > $scope.settings.smartButtonMaxItems) {
                 itemsText = itemsText.slice(0, $scope.settings.smartButtonMaxItems);
@@ -216,7 +231,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
               return itemsText.join(', ');
             } else {
               var totalSelected;
-
+				
               if ($scope.singleSelection) {
                 totalSelected = ($scope.selectedModel !== null && angular.isDefined($scope.selectedModel[$scope.settings.idProp])) ? 1 : 0;
               } else {
@@ -274,12 +289,16 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
           } else {
             finalObj = findObj;
           }
-
+			
           if ($scope.singleSelection) {
             clearObject($scope.selectedModel);
             angular.extend($scope.selectedModel, finalObj);
             $scope.externalEvents.onItemSelect(finalObj);
             if ($scope.settings.closeOnSelect) $scope.open = false;
+			  
+			/*if($scope.options[findObj.id].value === "custom") {
+				$scope.open = true;
+			}*/
 
             return;
           }
@@ -298,6 +317,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
           if ($scope.settings.closeOnSelect) $scope.open = false;
         };
 
+
         $scope.isChecked = function (id) {
           if ($scope.singleSelection) {
             return $scope.selectedModel !== null && angular.isDefined($scope.selectedModel[$scope.settings.idProp]) && $scope.selectedModel[$scope.settings.idProp] === getFindObj(id)[$scope.settings.idProp];
@@ -312,6 +332,9 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
             $scope.toggleDropdown();
           };
         }
-      }
+		  
+		  
+      }	
     };
+	  
   }]);
