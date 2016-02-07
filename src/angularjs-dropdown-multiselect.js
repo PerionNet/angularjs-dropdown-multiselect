@@ -2,8 +2,8 @@
 
 var directiveModule = angular.module('angularjs-dropdown-multiselect', []);
 
-directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$compile', '$parse',
-  function ($filter, $document, $compile, $parse) {
+directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$compile', '$parse', 'focus',
+  function ($filter, $document, $compile, $parse, focus) {
 
     return {
       restrict: 'AE',
@@ -31,7 +31,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
         template += 'infinite-scroll-container="getInfiniteScrollContainer()" ';
         template += 'infinite-scroll-distance="1" ';
         template += 'infinite-scroll-immediate-check="false" >';
-        template += '<li ng-show="settings.enableSearch" class="dropdown-search-holder"><div class="dropdown-header"><input id="{{elementId}}_search" type="text" class="form-control search-filter" style="width: 100%;" ng-model="searchFilter" placeholder="{{texts.searchPlaceholder}}" /></li>';
+        template += '<li ng-show="settings.enableSearch" class="dropdown-search-holder"><div class="dropdown-header"><input id="{{elementId}}_search" type="text" class="form-control search-filter" style="width: 100%;" ng-model="searchFilter" placeholder="{{texts.searchPlaceholder}}" focus-on="focusInput"/></li>';
         template += '<li ng-show="settings.enableSearch" class="divider"></li>';
         template += '<li ng-show="settings.enableEmpty"></li>';
         template += '<li ng-hide="!settings.showCheckAll || settings.selectionLimit > 0"><a data-ng-click="selectAll(); checkedAll = true" id="{{elementId}}_checkAll"><span ng-class="{\'checkbox-ok\': isCheckedAll()}" class="checkbox"></span>{{texts.checkAll}}</a>';
@@ -64,7 +64,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
         } else {
           template += '<li role="presentation" ng-repeat="option in options | filter: searchFilter | limitTo: itemsDisplayedInList track by $index">';
 
-          template += '<a id="{{elementId}}_option{{option.id}}" role="menuitem" tabindex="-1" ng-click="setSelectedItem(getPropertyForObject(option,settings.idProp))" tooltip="{{getPropertyForObject(option, settings.displayProp)}}"  ng-class="(getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit) ? \'shorten\' : \'\'" tooltip-enable="getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit">';
+          template += '<a id="{{elementId}}_option{{option.id}}" role="menuitem" href="javascript:void(0)" ng-click="setSelectedItem(getPropertyForObject(option,settings.idProp))" tooltip="{{getPropertyForObject(option, settings.displayProp)}}"  ng-class="(getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit) ? \'shorten\' : \'\'" tooltip-enable="getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit">';
 
           if (checkboxes) {
             template += '<div class="checkbox"><label><input class="checkboxInput" type="checkbox" ng-click="checkboxClick($event, getPropertyForObject(option,settings.idProp))" ng-checked="isChecked(getPropertyForObject(option,settings.idProp))" /> {{getPropertyForObject(option, settings.displayProp)}}</label></div></a>';
@@ -99,6 +99,9 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
 
         $scope.toggleDropdown = function () {
           $scope.open = !$scope.open;
+          if ($scope.open) {
+            focus('focusInput');
+          }
         };
 
         $scope.checkboxClick = function ($event, id) {
@@ -448,7 +451,6 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
         }
 
         $scope.addMoreItems = function () {
-          console.log('addMoreItems');
           $scope.itemsDisplayedInList += 1;
         };
 
