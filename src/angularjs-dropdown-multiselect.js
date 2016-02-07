@@ -17,7 +17,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
         groupBy: '@',
         api: '=',
         isCustomDateOpen: '=',
-        open: '=',
+        open: '='
       },
       template: function (element, attrs) {
         var checkboxes = attrs.checkboxes ? true : false;
@@ -30,44 +30,58 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
         template += '<li ng-show="settings.enableSearch" class="dropdown-search-holder"><div class="dropdown-header"><input id="{{elementId}}_search" type="text" class="form-control search-filter" style="width: 100%;" ng-model="searchFilter" placeholder="{{texts.searchPlaceholder}}" /></li>';
         template += '<li ng-show="settings.enableSearch" class="divider"></li>';
         template += '<li ng-show="settings.enableEmpty"></li>';
-        template += '<li ng-hide="!settings.showCheckAll || settings.selectionLimit > 0"><a data-ng-click="selectAll()" id="{{elementId}}_checkAll">{{texts.checkAll}}</a>';
-        template += '<li ng-show="settings.showUncheckAll" class="uncheckAll-separator"><a data-ng-click="deselectAll();" id="{{elementId}}_uncheckAll">{{texts.uncheckAll}}</a></li>';
+        template += '<li ng-hide="!settings.showCheckAll || settings.selectionLimit > 0"><a data-ng-click="selectAll(); checkedAll = true" id="{{elementId}}_checkAll"><span ng-class="{\'checkbox-ok\': isCheckedAll()}" class="checkbox"></span>{{texts.checkAll}}</a>';
+        template += '<li ng-show="settings.showUncheckAll" class="uncheckAll-separator"><a data-ng-click="deselectAll(); checkedAll = false" id="{{elementId}}_uncheckAll"><span class="checkbox uncheck-all"></span>{{texts.uncheckAll}}</a></li>';
 
         template += '<li ng-hide="(!settings.showCheckAll || settings.selectionLimit > 0) && !settings.showUncheckAll" class="divider"></li>';
         template += '<li class="divider" ng-show="settings.selectionLimit > 1"></li>';
         template += '<li role="presentation" ng-show="settings.selectionLimit > 1" class="selection-indicator"><a role="menuitem">{{selectedModel.length}} {{texts.selectionOf}} {{settings.selectionLimit}} {{texts.selectionCount}}</a></li>';
 
         if (groups) {
-          template += '<li ng-repeat-start="option in orderedItems | filter: searchFilter" ng-show="getPropertyForObject(option, settings.groupBy) !== getPropertyForObject(orderedItems[$index - 1], settings.groupBy)" >';//{{ getGroupTitle(getPropertyForObject(option, settings.groupBy)) }}';
-          template += '<a  role="presentation" tabindex="-1" ng-click="selectOrdeselectAll(getPropertyForObject(option,settings.groupBy), !dontRemove)" tooltip="{{getPropertyForObject(option, settings.displayProp)}}"  ng-class="(getPropertyForObject(option, settings.groupBy).length > settings.tooltipNumLimit) ? \'shorten\' : \'\'" tooltip-enable="getPropertyForObject(option, settings.groupBy).length > settings.tooltipNumLimit">';
-          template += '<span data-ng-class="{\'glyphicon glyphicon-ok\': isCheckedGroup(getPropertyForObject(option,settings.groupBy))}"></span> {{getGroupTitle(getPropertyForObject(option, settings.groupBy)) | limitTo:settings.tooltipNumLimit}}</a>';
+          //template += '<li ng-repeat-start="option in orderedItems | filter: searchFilter"  ng-show="getPropertyForObject(option, settings.groupBy) !== getPropertyForObject(orderedItems[$index - 1], settings.groupBy)"  class="multiselector-group-title">';//{{ getGroupTitle(getPropertyForObject(option, settings.groupBy)) }}';
+          //template += '<a  role="presentation" tabindex="-1" ng-click="selectOrdeselectAll(getPropertyForObject(option,settings.groupBy), !isCheckedGroup(getPropertyForObject(option,settings.groupBy)))" tooltip="{{getPropertyForObject(option, settings.displayProp)}}">';
+          //template += '<span data-ng-class="{\'glyphicon glyphicon-ok\': isCheckedGroup(getPropertyForObject(option,settings.groupBy))}"></span> {{getGroupTitle(getPropertyForObject(option, settings.groupBy)) | limitTo:settings.tooltipNumLimit}}</a> <a ng-click="groupOpen(getPropertyForObject(option,settings.groupBy))"><i class="hf hf-arrow-down"></i></a>';
+
+          //template += '<li ng-repeat-end role="presentation">';
+
+          template += '<li ng-repeat="option in orderedItems | filter: searchFilter" class="multiselector-group-title" ng-if="getPropertyForObject(orderedItems[$index], settings.groupBy) !== getPropertyForObject(orderedItems[$index-1], settings.groupBy)">';
+          template += '<a  role="presentation" tabindex="-1" ng-click="selectOrdeselectAll(getPropertyForObject(option,settings.groupBy), !isCheckedGroup(getPropertyForObject(option,settings.groupBy)))"">';
+          template += '<span data-ng-class="{\'checkbox-ok\': isCheckedGroup(getPropertyForObject(option,settings.groupBy)), \'checkbox-minus\': isCheckedGroupPart(getPropertyForObject(option,settings.groupBy))}" class="checkbox"></span>';
+          template += ' {{getGroupTitle(getPropertyForObject(option, settings.groupBy)) | limitTo:settings.tooltipNumLimit}}</a> <i class="group-arrow" ng-class="{\'arrow-opened\': openGroup}" ng-click="openGroup = !openGroup"></i>';
+          template += '<ul class="group-list" ng-class="openGroup ? \'group-open\' : \'\'">';
+          template += '<li class="multiselect-checkers"><a data-ng-click="selectAllInGroup(getPropertyForObject(option,settings.groupBy), !isCheckedGroup(getPropertyForObject(option,settings.groupBy)))" id="{{elementId}}_checkAll"><span ng-class="{\'checkbox-ok\': checkedAll}" class="checkbox"></span>{{texts.checkAll}}</a>';
+          template += '<li class="multiselect-checkers"><a data-ng-click="deselectAllInGroup(getPropertyForObject(option,settings.groupBy), !isCheckedGroup(getPropertyForObject(option,settings.groupBy)))" id="{{elementId}}_uncheckAll"><span class="checkbox uncheck-all"></span>{{texts.uncheckAll}}</a></li>';
+          template += '<li role="presentation" ng-repeat="option in options | filter: option.browser">';
+          template += '<a id="{{elementId}}_option{{option.id}}" role="menuitem" tabindex="-1" ng-click="setSelectedItem(getPropertyForObject(option,settings.idProp))" tooltip="{{getPropertyForObject(option, settings.displayProp)}}"  ng-class="(getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit) ? \'shorten\' : \'\'" tooltip-enable="getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit">';
+          template += '<span data-ng-class="{\'checkbox-ok\': isChecked(getPropertyForObject(option,settings.idProp))}" class="checkbox"></span>{{option.name}}</a>';
+          template += '</li></ul>';
           template += '</li>';
 
-          template += '<li ng-repeat-end role="presentation">';
         } else {
           template += '<li role="presentation" ng-repeat="option in options | filter: searchFilter">';
+
+          template += '<a id="{{elementId}}_option{{option.id}}" role="menuitem" tabindex="-1" ng-click="setSelectedItem(getPropertyForObject(option,settings.idProp))" tooltip="{{getPropertyForObject(option, settings.displayProp)}}"  ng-class="(getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit) ? \'shorten\' : \'\'" tooltip-enable="getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit">';
+
+          if (checkboxes) {
+            template += '<div class="checkbox"><label><input class="checkboxInput" type="checkbox" ng-click="checkboxClick($event, getPropertyForObject(option,settings.idProp))" ng-checked="isChecked(getPropertyForObject(option,settings.idProp))" /> {{getPropertyForObject(option, settings.displayProp)}}</label></div></a>';
+          } else {
+            template += '<span data-ng-class="{\'checkbox-ok\': isChecked(getPropertyForObject(option,settings.idProp))}" class="checkbox"></span> {{getPropertyForObject(option, settings.displayProp) | limitTo:settings.tooltipNumLimit}}</a>';
+          }
+
+          template += '</li>';
         }
 
-        template += '<a id="{{elementId}}_option{{option.id}}" role="menuitem" tabindex="-1" ng-click="setSelectedItem(getPropertyForObject(option,settings.idProp))" tooltip="{{getPropertyForObject(option, settings.displayProp)}}"  ng-class="(getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit) ? \'shorten\' : \'\'" tooltip-enable="getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit">';
-
-        if (checkboxes) {
-          template += '<div class="checkbox"><label><input class="checkboxInput" type="checkbox" ng-click="checkboxClick($event, getPropertyForObject(option,settings.idProp))" ng-checked="isChecked(getPropertyForObject(option,settings.idProp))" /> {{getPropertyForObject(option, settings.displayProp)}}</label></div></a>';
-        } else {
-          template += '<span data-ng-class="{\'glyphicon glyphicon-ok\': isChecked(getPropertyForObject(option,settings.idProp))}"></span> {{getPropertyForObject(option, settings.displayProp) | limitTo:settings.tooltipNumLimit}}</a>';
-        }
-
-        template += '</li>';
 
         template += '</ul>';
         template += '</div>';
 
-        if (customdate) {
-          template += '<div class="filter-custom-dates ng-hide" ng-show="isCustomDateOpen">';
-          template += '<button class="date-picker-close" ng-click="isCustomDateOpen = !isCustomDateOpen"></button>';
-          template += '<datepicker ng-model="datePickerStart" show-weeks="false" class="date-picker-wrapper start-date"></datepicker>';
-          template += '<datepicker ng-model="datePickerEnd" show-weeks="false" class="date-picker-wrapper end-date"></datepicker>';
-          template += '</div>';
-        }
+        /*if (customdate) {
+         template += '<div class="filter-custom-dates ng-hide" ng-show="isCustomDateOpen">';
+         template += '<button class="date-picker-close" ng-click="isCustomDateOpen = !isCustomDateOpen"></button>';
+         template += '<datepicker ng-model="datePickerStart" show-weeks="false" class="date-picker-wrapper start-date"></datepicker>';
+         template += '<datepicker ng-model="datePickerEnd" show-weeks="false" class="date-picker-wrapper end-date"></datepicker>';
+         template += '</div>';
+         }*/
 
         element.html(template);
       },
@@ -294,8 +308,6 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
         };
 
         $scope.selectOrdeselectAll = function (inGroup, dontRemove) {
-          //$scope.deselectAll(false);
-          //$scope.externalEvents.onSelectAll();
 
           angular.forEach($scope.options, function (value) {
             //$scope.setSelectedItem(value[$scope.settings.idProp], true);
@@ -303,6 +315,26 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
               $scope.setSelectedItem(value[$scope.settings.idProp], dontRemove);
             }
           });
+        };
+
+        $scope.selectAllInGroup = function (inGroup, dontRemove) {
+
+          $scope.orderedItems.forEach (function (item) {
+            if (item[$scope.groupBy] === inGroup) {
+              $scope.setSelectedItem(item[$scope.settings.idProp], true);
+            }
+          });
+
+        };
+
+        $scope.deselectAllInGroup = function (inGroup, dontRemove) {
+
+          $scope.orderedItems.forEach (function (item) {
+            if (item[$scope.groupBy] === inGroup) {
+              $scope.setSelectedItem(item[$scope.settings.idProp], false);
+            }
+          });
+
         };
 
         $scope.setSelectedItem = function (id, dontRemove) {
@@ -351,22 +383,57 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
           return _.findIndex($scope.selectedModel, getFindObj(id)) !== -1;
         };
 
-        $scope.isCheckedGroup = function (id) {
-          return false;
-          /*if ($scope.selectedModel.length > 1) {
-            console.log($scope.selectedModel);
-            var arr = [];
-            $scope.selectedModel.forEach(function (model) {
-              arr.push(_.findIndex($scope.selectedModel, getFindObj(model.id)) !== -1)
-            })
-            console.log(arr);
-            return true;
+        $scope.isCheckedAll = function () {
+          var length = 0;
+          length = $scope.orderedItems ? $scope.orderedItems.length : $scope.options.length;
+          return ($scope.selectedModel.length === length)
+        };
+
+        $scope.isCheckedGroup = function (groupName) {
+          if ($scope.selectedModel.length >= 1) {
+            var groupTotal = 0;
+            var selectedGroupTotal = 0;
+
+            $scope.orderedItems.forEach (function (item) {
+              if (item[$scope.groupBy] === groupName) {
+                groupTotal ++;
+              }
+            });
+
+            $scope.selectedModel.forEach (function (item) {
+              if (item[$scope.groupBy] === groupName) {
+                selectedGroupTotal ++;
+              }
+            });
+            return (selectedGroupTotal === groupTotal)
           }
           else {
             return false;
-          }*/
-          //return _.findIndex($scope.selectedModel, getFindObj(id)) !== -1;
+          }
         };
+        $scope.isCheckedGroupPart = function (groupName) {
+          if ($scope.selectedModel.length >= 1) {
+            var groupTotal = 0;
+            var selectedGroupTotal = 0;
+
+            $scope.orderedItems.forEach (function (item) {
+              if (item[$scope.groupBy] === groupName) {
+                groupTotal ++;
+              }
+            });
+
+            $scope.selectedModel.forEach (function (item) {
+              if (item[$scope.groupBy] === groupName) {
+                selectedGroupTotal ++;
+              }
+            });
+            return (selectedGroupTotal < groupTotal && selectedGroupTotal > 0)
+          }
+          else {
+            return false;
+          }
+        };
+
 
 
         if ($scope.api) {
@@ -374,6 +441,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
             $scope.toggleDropdown();
           };
         }
+
 
         $scope.$on("$destroy", function () {
           $dropdownTrigger = null;
