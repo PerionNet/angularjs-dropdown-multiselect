@@ -24,9 +24,13 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
         var customdate = attrs.customdate ? true : false;
         var groups = attrs.groupBy ? true : false;
 
-        var template = '<div class="multiselect-parent btn-group dropdown-multiselect">';
+        var template = '<div class="multiselect-parent btn-group dropdown-multiselect" >';
         template += '<button id="{{elementId}}_btn" type="button" class="dropdown-toggle" ng-class="settings.buttonClasses" ng-click="toggleDropdown()">{{getButtonText()}}&nbsp;<span class="caret"></span></button>';
-        template += '<ul class="dropdown-menu dropdown-menu-form" ng-if="open" ng-style="{height : settings.scrollable ? settings.scrollableHeight : \'auto\' }" style="overflow: scroll; display: block;" >';
+        template += '<ul id="{{elementId}}-multiselect-wrapper" class="dropdown-menu dropdown-menu-form" ng-if="open" ng-style="{height : settings.scrollable ? settings.scrollableHeight : \'auto\' }" style="overflow: scroll; display: block;" ';
+        template += 'infinite-scroll="addMoreItems()" ';
+        template += 'infinite-scroll-container="getInfiniteScrollContainer()" ';
+        template += 'infinite-scroll-distance="1" ';
+        template += 'infinite-scroll-immediate-check="false" >';
         template += '<li ng-show="settings.enableSearch" class="dropdown-search-holder"><div class="dropdown-header"><input id="{{elementId}}_search" type="text" class="form-control search-filter" style="width: 100%;" ng-model="searchFilter" placeholder="{{texts.searchPlaceholder}}" /></li>';
         template += '<li ng-show="settings.enableSearch" class="divider"></li>';
         template += '<li ng-show="settings.enableEmpty"></li>';
@@ -58,7 +62,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
           template += '</li>';
 
         } else {
-          template += '<li role="presentation" ng-repeat="option in options | filter: searchFilter">';
+          template += '<li role="presentation" ng-repeat="option in options | filter: searchFilter | limitTo: itemsDisplayedInList track by $index">';
 
           template += '<a id="{{elementId}}_option{{option.id}}" role="menuitem" tabindex="-1" ng-click="setSelectedItem(getPropertyForObject(option,settings.idProp))" tooltip="{{getPropertyForObject(option, settings.displayProp)}}"  ng-class="(getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit) ? \'shorten\' : \'\'" tooltip-enable="getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit">';
 
@@ -148,6 +152,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
         };
 
         $scope.searchFilter = $scope.searchFilter || '';
+        $scope.itemsDisplayedInList = 12;
 
         if (angular.isDefined($scope.settings.groupBy)) {
           watchOptions = $scope.$watch('options', function (newValue) {
@@ -441,6 +446,15 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
             $scope.toggleDropdown();
           };
         }
+
+        $scope.addMoreItems = function () {
+          console.log('addMoreItems');
+          $scope.itemsDisplayedInList += 1;
+        };
+
+        $scope.getInfiniteScrollContainer = function () {
+            return '#' + $scope.elementId + '-multiselect-wrapper';
+        };
 
 
         $scope.$on("$destroy", function () {
