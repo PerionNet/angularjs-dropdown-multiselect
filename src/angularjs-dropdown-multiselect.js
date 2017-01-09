@@ -28,7 +28,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 //var groups = attrs.groupBy ? true : false;
 
                 var template = '<div class="multiselect-parent btn-group dropdown-multiselect" arrow-selector>';
-                template += '<button id="{{elementId}}_btn" type="button" class="dropdown-toggle" ng-class="settings.buttonClasses" ng-click="toggleDropdown()">{{getButtonText()}}&nbsp;<span class="caret"></span></button>';
+                template += '<button id="{{elementId}}_btn" type="button" class="dropdown-toggle" ng-class="settings.buttonClasses" ng-click="toggleDropdown()">{{getButtonText(true)}}&nbsp;<span class="caret"></span></button>';
                 template += '<ul id="{{elementId}}-multiselect-wrapper" class="dropdown-menu dropdown-menu-form" ng-if="open" ng-style="{height : settings.scrollable ? settings.scrollableHeight : \'auto\' }" style="overflow: scroll; display: block;" ';
                 template += 'infinite-scroll="addMoreItems()" ';
                 template += 'infinite-scroll-container="getInfiniteScrollContainer()" ';
@@ -90,6 +90,13 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 element.html(template);
             },
             link: function ($scope, $element, $attrs) {
+                var monthNames = [
+                    "Jan", "Feb", "Mar",
+                    "Apr", "May", "Jun", "Jul",
+                    "Aug", "Sep", "Oct",
+                    "Nov", "Dec"
+                ];
+
                 $scope.elementId = $attrs.id;
                 $scope.groups = $attrs.groupBy ? true : false;
                 $scope.selectedRow = -1;
@@ -263,7 +270,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                     return groupValue;
                 };
 
-                $scope.getButtonText = function () {
+                $scope.getButtonText = function (isBtnTitle) {
                     if ($scope.settings.dynamicTitle && ($scope.selectedModel.length > 0 || (angular.isObject($scope.selectedModel) && _.keys($scope.selectedModel).length > 0))) {
 
                         if ($scope.settings.smartButtonMaxItems > 0) {
@@ -282,6 +289,15 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                                         var displayText = $scope.getPropertyForObject(optionItem, $scope.settings.groupBy);
                                     } else {
                                         var displayText = $scope.getPropertyForObject(optionItem, $scope.settings.displayProp);
+                                        if(isBtnTitle) {
+                                            if (optionItem.displayDate) {
+                                                var startDate = new Date(new Date().setDate(new Date().getDate() - optionItem.startDate));
+                                                var startDayText = monthNames[startDate.getMonth()] + " " + startDate.getDate();
+                                                var endDate = new Date(new Date().setDate(new Date().getDate() - optionItem.endDate));
+                                                var endDateText = monthNames[endDate.getMonth()] + " " + endDate.getDate()
+                                                displayText += ": " + startDayText +  " - " + endDateText
+                                            }
+                                        }
                                     }
                                     var converterResponse = $scope.settings.smartButtonTextConverter(displayText, optionItem);
 
