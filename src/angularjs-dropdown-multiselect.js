@@ -2,7 +2,7 @@
 
 var directiveModule = angular.module('angularjs-dropdown-multiselect', []);
 
-directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$compile', '$parse', 'focus', '$sessionStorage',
+directiveModule.directive('ngDropdownMultiselect1', ['$filter', '$document', '$compile', '$parse', 'focus', '$sessionStorage',
     function ($filter, $document, $compile, $parse, focus, $sessionStorage) {
 
         return {
@@ -291,11 +291,30 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                                         var displayText = $scope.getPropertyForObject(optionItem, $scope.settings.displayProp);
                                         if(isBtnTitle) {
                                             if (optionItem.displayDate) {
-                                                var startDate = new Date(new Date().setDate(new Date().getDate() - optionItem.startDate));
-                                                var startDayText = monthNames[startDate.getMonth()] + " " + startDate.getDate();
-                                                var endDate = new Date(new Date().setDate(new Date().getDate() - optionItem.endDate));
-                                                var endDateText = monthNames[endDate.getMonth()] + " " + endDate.getDate()
-                                                displayText += ": " + startDayText +  " - " + endDateText
+                                                var startDate;
+                                                var startDayText;
+                                                var endDate;
+                                                var now = new Date;
+                                                if (optionItem.startDate === 'month') {
+                                                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                                                    endDate = now;
+                                                }
+                                                else if (optionItem.startDate === 'lastmonth') {
+                                                    startDate = new Date(new Date().setDate(new Date().getDate() - optionItem.startDate));
+                                                    endDate = new Date(new Date().setDate(new Date().getDate() - optionItem.endDate));
+                                                }
+                                                else {
+                                                    startDate = new Date(new Date().setDate(new Date().getDate() - optionItem.startDate));
+                                                    startDayText = monthNames[startDate.getMonth()] + " " + startDate.getDate();
+                                                }
+                                                if (optionItem.startDate !== optionItem.endDate) {
+                                                    endDate = new Date(new Date().setDate(new Date().getDate() - optionItem.endDate));
+                                                    var endDateText = monthNames[endDate.getMonth()] + " " + endDate.getDate()
+                                                    displayText += ": " + startDayText +  " - " + endDateText;
+                                                }
+                                                else {
+                                                    displayText += ": " + startDayText;
+                                                }
                                             }
                                         }
                                     }
