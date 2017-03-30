@@ -1,8 +1,8 @@
 {
   "name": "angularjs-dropdown-multiselect",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "authors": [
-    "Oran Hollaender <oran.hollaender@gmail.com>"
+    "Shiran Berdichevski"
   ],
   "description": "AngularJS Dropdown Multiselect directive",
   "keywords": ["angular", "angularjs", "directive", "dropdown", "multiselect", "checklist", "list", "bootstrap", "checkbox"],
