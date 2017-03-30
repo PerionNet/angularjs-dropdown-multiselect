@@ -2,7 +2,7 @@
 
 var directiveModule = angular.module('angularjs-dropdown-multiselect', []);
 
-directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$compile', '$parse', 'focus', '$sessionStorage',
+directiveModule.directive('ngDropdownMultiselect1', ['$filter', '$document', '$compile', '$parse', 'focus', '$sessionStorage',
     function ($filter, $document, $compile, $parse, focus, $sessionStorage) {
 
         return {
@@ -271,7 +271,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 };
 
                 $scope.getButtonText = function (isBtnTitle) {
-                    if ($scope.settings.dynamicTitle && ($scope.selectedModel && $scope.selectedModel.length > 0 || (angular.isObject($scope.selectedModel) && _.keys($scope.selectedModel).length > 0))) {
+                    if ($scope.settings.dynamicTitle && ($scope.selectedModel.length > 0 || (angular.isObject($scope.selectedModel) && _.keys($scope.selectedModel).length > 0))) {
 
                         if ($scope.settings.smartButtonMaxItems > 0) {
                             var itemsText = [];
@@ -292,8 +292,8 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                                         if(isBtnTitle) {
                                             if (optionItem.displayDate) {
                                                 var startDate;
-                                                var startDayText;
                                                 var endDate;
+                                                var startDayText
                                                 var now = new Date;
                                                 if (optionItem.startDate === 'month') {
                                                     startDate = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -310,9 +310,11 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                                                 if (optionItem.startDate !== optionItem.endDate) {
                                                     endDate = new Date(new Date().setDate(new Date().getDate() - optionItem.endDate));
                                                     var endDateText = monthNames[endDate.getMonth()] + " " + endDate.getDate()
+                                                    startDayText = monthNames[startDate.getMonth()] + " " + startDate.getDate();
                                                     displayText += ": " + startDayText +  " - " + endDateText;
                                                 }
                                                 else {
+                                                    startDayText = monthNames[startDate.getMonth()] + " " + startDate.getDate();
                                                     displayText += ": " + startDayText;
                                                 }
                                             }
@@ -477,9 +479,6 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 $scope.isCheckedAll = function () {
                     var length = 0;
                     length = $scope.orderedItems ? $scope.orderedItems.length : $scope.options.length;
-                    if (!$scope.selectedModel) {
-                        return false;
-                    }
                     return ($scope.selectedModel.length === length)
                 };
 
