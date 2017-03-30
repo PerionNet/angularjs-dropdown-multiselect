@@ -2,7 +2,7 @@
 
 var directiveModule = angular.module('angularjs-dropdown-multiselect', []);
 
-directiveModule.directive('ngDropdownMultiselect1', ['$filter', '$document', '$compile', '$parse', 'focus', '$sessionStorage',
+directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$compile', '$parse', 'focus', '$sessionStorage',
     function ($filter, $document, $compile, $parse, focus, $sessionStorage) {
 
         return {
