@@ -291,32 +291,12 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                                         var displayText = $scope.getPropertyForObject(optionItem, $scope.settings.displayProp);
                                         if(isBtnTitle) {
                                             if (optionItem.displayDate) {
-                                                var startDate;
-                                                var endDate;
-                                                var startDayText
-                                                var now = new Date;
-                                                if (optionItem.startDate === 'month') {
-                                                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-                                                    endDate = now;
-                                                }
-                                                else if (optionItem.startDate === 'lastmonth') {
-                                                    startDate = new Date(new Date().setDate(new Date().getDate() - optionItem.startDate));
-                                                    endDate = new Date(new Date().setDate(new Date().getDate() - optionItem.endDate));
-                                                }
-                                                else {
-                                                    startDate = new Date(new Date().setDate(new Date().getDate() - optionItem.startDate));
-                                                    startDayText = monthNames[startDate.getMonth()] + " " + startDate.getDate();
-                                                }
-                                                if (optionItem.startDate !== optionItem.endDate) {
-                                                    endDate = new Date(new Date().setDate(new Date().getDate() - optionItem.endDate));
-                                                    var endDateText = monthNames[endDate.getMonth()] + " " + endDate.getDate()
-                                                    startDayText = monthNames[startDate.getMonth()] + " " + startDate.getDate();
-                                                    displayText += ": " + startDayText +  " - " + endDateText;
-                                                }
-                                                else {
-                                                    startDayText = monthNames[startDate.getMonth()] + " " + startDate.getDate();
-                                                    displayText += ": " + startDayText;
-                                                }
+                                                var f, g;
+                                                "month" === optionItem.startDate ? (f = moment(f).startOf("month").format("MMM DD"),
+                                                        g = moment().format("MMM DD")) : "lastmonth" === optionItem.startDate ? (f = moment().utc().subtract(1, "month").startOf("month").format("MMM DD"),
+                                                            g = moment().utc().subtract(1, "month").endOf("month").format("MMM DD")) : (f = moment().utc().subtract(optionItem.startDate, "day").format("MMM DD"),
+                                                            g = moment().utc().subtract(optionItem.endDate, "day").format("MMM DD")),
+                                                    displayText += optionItem.startDate !== optionItem.endDate ? ": " + f + " - " + g : ": " + f
                                             }
                                         }
                                     }
