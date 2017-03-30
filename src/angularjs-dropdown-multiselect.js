@@ -477,6 +477,9 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 $scope.isCheckedAll = function () {
                     var length = 0;
                     length = $scope.orderedItems ? $scope.orderedItems.length : $scope.options.length;
+                    if (!$scope.selectedModel) {
+                        return false;
+                    }
                     return ($scope.selectedModel.length === length)
                 };
 
