@@ -232,7 +232,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 }
 
                 if ($scope.singleSelection) {
-                    if (angular.isArray($scope.selectedModel) && $scope.selectedModel.length === 0) {
+                    if ($scope.selectedModel && angular.isArray($scope.selectedModel) && $scope.selectedModel.length === 0) {
                         clearObject($scope.selectedModel);
                     }
                 }
@@ -271,7 +271,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 };
 
                 $scope.getButtonText = function (isBtnTitle) {
-                    if ($scope.settings.dynamicTitle && ($scope.selectedModel.length > 0 || (angular.isObject($scope.selectedModel) && _.keys($scope.selectedModel).length > 0))) {
+                    if ($scope.settings.dynamicTitle && ($scope.selectedModel && $scope.selectedModel.length > 0 || (angular.isObject($scope.selectedModel) && _.keys($scope.selectedModel).length > 0))) {
 
                         if ($scope.settings.smartButtonMaxItems > 0) {
                             var itemsText = [];
