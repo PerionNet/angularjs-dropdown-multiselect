@@ -13,6 +13,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 options: '=',
                 extraSettings: '=',
                 events: '=',
+                disabled: '=',
                 searchFilter: '=?',
                 translationTexts: '=',
                 groupBy: '@',
@@ -28,7 +29,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 //var groups = attrs.groupBy ? true : false;
 
                 var template = '<div class="multiselect-parent btn-group dropdown-multiselect" arrow-selector>';
-                template += '<button id="{{elementId}}_btn" type="button" class="dropdown-toggle" ng-class="settings.buttonClasses" ng-click="toggleDropdown()">{{getButtonText(true)}}&nbsp;<span class="caret"></span></button>';
+                template += '<button id="{{elementId}}_btn" ng-disabled=disabled type="button" class="dropdown-toggle" ng-class="settings.buttonClasses" ng-click="toggleDropdown()">{{getButtonText(true)}}&nbsp;<span class="caret"></span></button>';
                 template += '<ul id="{{elementId}}-multiselect-wrapper" class="dropdown-menu dropdown-menu-form" ng-if="open" ng-style="{height : settings.scrollable ? settings.scrollableHeight : \'auto\' }" style="overflow: scroll; display: block;" ';
                 template += 'infinite-scroll="addMoreItems()" ';
                 template += 'infinite-scroll-container="getInfiniteScrollContainer()" ';
@@ -232,7 +233,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 }
 
                 if ($scope.singleSelection) {
-                    if (angular.isArray($scope.selectedModel) && $scope.selectedModel.length === 0) {
+                    if ($scope.selectedModel && angular.isArray($scope.selectedModel) && $scope.selectedModel.length === 0) {
                         clearObject($scope.selectedModel);
                     }
                 }
@@ -271,7 +272,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 };
 
                 $scope.getButtonText = function (isBtnTitle) {
-                    if ($scope.settings.dynamicTitle && ($scope.selectedModel.length > 0 || (angular.isObject($scope.selectedModel) && _.keys($scope.selectedModel).length > 0))) {
+                    if ($scope.settings.dynamicTitle && $scope.selectedModel && ($scope.selectedModel.length > 0 || (angular.isObject($scope.selectedModel) && _.keys($scope.selectedModel).length > 0))) {
 
                         if ($scope.settings.smartButtonMaxItems > 0) {
                             var itemsText = [];
