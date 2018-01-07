@@ -13,6 +13,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 options: '=',
                 extraSettings: '=',
                 events: '=',
+                disabled: '=',
                 searchFilter: '=?',
                 translationTexts: '=',
                 groupBy: '@',
@@ -20,7 +21,9 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 showModes: '@',
                 api: '=',
                 isCustomDateOpen: '=',
-                open: '='
+                open: '=',
+                dependency: '=',
+                index: '='
             },
             template: function (element, attrs, scope) {
                 var checkboxes = attrs.checkboxes ? true : false;
@@ -28,7 +31,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 //var groups = attrs.groupBy ? true : false;
 
                 var template = '<div class="multiselect-parent btn-group dropdown-multiselect" arrow-selector>';
-                template += '<button id="{{elementId}}_btn" type="button" class="dropdown-toggle" ng-class="settings.buttonClasses" ng-click="toggleDropdown()">{{getButtonText()}}&nbsp;<span class="caret"></span></button>';
+                template += '<button id="{{elementId}}_btn" ng-disabled=disabled type="button" class="dropdown-toggle" ng-class="settings.buttonClasses" ng-click="toggleDropdown()">{{getButtonText(true)}}&nbsp;<span class="caret"></span></button>';
                 template += '<ul id="{{elementId}}-multiselect-wrapper" class="dropdown-menu dropdown-menu-form" ng-if="open" ng-style="{height : settings.scrollable ? settings.scrollableHeight : \'auto\' }" style="overflow: scroll; display: block;" ';
                 template += 'infinite-scroll="addMoreItems()" ';
                 template += 'infinite-scroll-container="getInfiniteScrollContainer()" ';
@@ -90,6 +93,13 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 element.html(template);
             },
             link: function ($scope, $element, $attrs) {
+                var monthNames = [
+                    "Jan", "Feb", "Mar",
+                    "Apr", "May", "Jun", "Jul",
+                    "Aug", "Sep", "Oct",
+                    "Nov", "Dec"
+                ];
+
                 $scope.elementId = $attrs.id;
                 $scope.groups = $attrs.groupBy ? true : false;
                 $scope.selectedRow = -1;
@@ -225,7 +235,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 }
 
                 if ($scope.singleSelection) {
-                    if (angular.isArray($scope.selectedModel) && $scope.selectedModel.length === 0) {
+                    if ($scope.selectedModel && angular.isArray($scope.selectedModel) && $scope.selectedModel.length === 0) {
                         clearObject($scope.selectedModel);
                     }
                 }
@@ -263,8 +273,8 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                     return groupValue;
                 };
 
-                $scope.getButtonText = function () {
-                    if ($scope.settings.dynamicTitle && ($scope.selectedModel.length > 0 || (angular.isObject($scope.selectedModel) && _.keys($scope.selectedModel).length > 0))) {
+                $scope.getButtonText = function (isBtnTitle) {
+                    if ($scope.settings.dynamicTitle && $scope.selectedModel && ($scope.selectedModel.length > 0 || (angular.isObject($scope.selectedModel) && _.keys($scope.selectedModel).length > 0))) {
 
                         if ($scope.settings.smartButtonMaxItems > 0) {
                             var itemsText = [];
@@ -282,6 +292,16 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                                         var displayText = $scope.getPropertyForObject(optionItem, $scope.settings.groupBy);
                                     } else {
                                         var displayText = $scope.getPropertyForObject(optionItem, $scope.settings.displayProp);
+                                        if(isBtnTitle) {
+                                            if (optionItem.displayDate) {
+                                                var f, g;
+                                                "month" === optionItem.startDate ? (f = moment(f).startOf("month").format("MMM DD"),
+                                                        g = moment().format("MMM DD")) : "lastmonth" === optionItem.startDate ? (f = moment().utc().subtract(1, "month").startOf("month").format("MMM DD"),
+                                                            g = moment().utc().subtract(1, "month").endOf("month").format("MMM DD")) : (f = moment().utc().subtract(optionItem.startDate, "day").format("MMM DD"),
+                                                            g = moment().utc().subtract(optionItem.endDate, "day").format("MMM DD")),
+                                                    displayText += optionItem.startDate !== optionItem.endDate ? ": " + f + " - " + g : ": " + f
+                                            }
+                                        }
                                     }
                                     var converterResponse = $scope.settings.smartButtonTextConverter(displayText, optionItem);
 
@@ -402,7 +422,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                     if ($scope.singleSelection) {
                         clearObject($scope.selectedModel);
                         angular.extend($scope.selectedModel, finalObj);
-                        $scope.externalEvents.onItemSelect(finalObj);
+                        $scope.externalEvents.onItemSelect(finalObj, $scope.index, $scope.dependency);
                         if ($scope.settings.closeOnSelect) {
                             $scope.open = false;
                         }
