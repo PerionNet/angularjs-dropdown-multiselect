@@ -13,7 +13,6 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 options: '=',
                 extraSettings: '=',
                 events: '=',
-                disabled: '=',
                 searchFilter: '=?',
                 translationTexts: '=',
                 groupBy: '@',
@@ -22,8 +21,6 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 api: '=',
                 isCustomDateOpen: '=',
                 open: '=',
-                dependency: '=',
-                index: '=',
                 tooltipNumLimit: '='
             },
             template: function (element, attrs, scope) {
@@ -32,7 +29,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 //var groups = attrs.groupBy ? true : false;
 
                 var template = '<div class="multiselect-parent btn-group dropdown-multiselect" arrow-selector>';
-                template += '<button id="{{elementId}}_btn" ng-disabled=disabled type="button" class="dropdown-toggle" ng-class="settings.buttonClasses" ng-click="toggleDropdown()">{{getButtonText(true)}}&nbsp;<span class="caret"></span></button>';
+                template += '<button id="{{elementId}}_btn" type="button" class="dropdown-toggle" ng-class="settings.buttonClasses" ng-click="toggleDropdown()">{{getButtonText(true)}}&nbsp;<span class="caret"></span></button>';
                 template += '<ul id="{{elementId}}-multiselect-wrapper" class="dropdown-menu dropdown-menu-form" ng-if="open" ng-style="{height : settings.scrollable ? settings.scrollableHeight : \'auto\' }" style="overflow: scroll; display: block;" ';
                 template += 'infinite-scroll="addMoreItems()" ';
                 template += 'infinite-scroll-container="getInfiniteScrollContainer()" ';
@@ -295,12 +292,32 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                                         var displayText = $scope.getPropertyForObject(optionItem, $scope.settings.displayProp);
                                         if(isBtnTitle) {
                                             if (optionItem.displayDate) {
-                                                var f, g;
-                                                "month" === optionItem.startDate ? (f = moment(f).startOf("month").format("MMM DD"),
-                                                        g = moment().format("MMM DD")) : "lastmonth" === optionItem.startDate ? (f = moment().utc().subtract(1, "month").startOf("month").format("MMM DD"),
-                                                            g = moment().utc().subtract(1, "month").endOf("month").format("MMM DD")) : (f = moment().utc().subtract(optionItem.startDate, "day").format("MMM DD"),
-                                                            g = moment().utc().subtract(optionItem.endDate, "day").format("MMM DD")),
-                                                    displayText += optionItem.startDate !== optionItem.endDate ? ": " + f + " - " + g : ": " + f
+                                                var startDate;
+                                                var endDate;
+                                                var startDayText
+                                                var now = new Date;
+                                                if (optionItem.startDate === 'month') {
+                                                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                                                    endDate = now;
+                                                }
+                                                else if (optionItem.startDate === 'lastmonth') {
+                                                    startDate = new Date(new Date().setDate(new Date().getDate() - optionItem.startDate));
+                                                    endDate = new Date(new Date().setDate(new Date().getDate() - optionItem.endDate));
+                                                }
+                                                else {
+                                                    startDate = new Date(new Date().setDate(new Date().getDate() - optionItem.startDate));
+                                                    startDayText = monthNames[startDate.getMonth()] + " " + startDate.getDate();
+                                                }
+                                                if (optionItem.startDate !== optionItem.endDate) {
+                                                    endDate = new Date(new Date().setDate(new Date().getDate() - optionItem.endDate));
+                                                    var endDateText = monthNames[endDate.getMonth()] + " " + endDate.getDate()
+                                                    startDayText = monthNames[startDate.getMonth()] + " " + startDate.getDate();
+                                                    displayText += ": " + startDayText +  " - " + endDateText;
+                                                }
+                                                else {
+                                                    startDayText = monthNames[startDate.getMonth()] + " " + startDate.getDate();
+                                                    displayText += ": " + startDayText;
+                                                }
                                             }
                                         }
                                     }
