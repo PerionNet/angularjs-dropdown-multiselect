@@ -21,8 +21,9 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 api: '=',
                 isCustomDateOpen: '=',
                 open: '=',
-                tooltipNumLimit: '='
-            },
+                dependency: '=',
+                index: '=',
+                tooltipNumLimit: '='            },
             template: function (element, attrs, scope) {
                 var checkboxes = attrs.checkboxes ? true : false;
                 var customdate = attrs.customdate ? true : false;
