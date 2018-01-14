@@ -23,7 +23,8 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 isCustomDateOpen: '=',
                 open: '=',
                 dependency: '=',
-                index: '='
+                index: '=',
+                tooltipNumLimit: '='
             },
             template: function (element, attrs, scope) {
                 var checkboxes = attrs.checkboxes ? true : false;
@@ -153,7 +154,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                     allowGroupSelect: true,
                     smartButtonMaxItems: 0,
                     smartButtonTextConverter: angular.noop,
-                    tooltipNumLimit: 30,
+                    tooltipNumLimit: $scope.tooltipNumLimit ? $scope.tooltipNumLimit  : 30,
                     enableEmpty: false
                 };
 
