@@ -21,7 +21,11 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 showModes: '@',
                 api: '=',
                 isCustomDateOpen: '=',
-                open: '='
+                open: '=',
+                dependency: '=',
+                index: '=',
+                tooltipNumLimit: '=',
+                disabledItems: '='
             },
             template: function (element, attrs, scope) {
                 var checkboxes = attrs.checkboxes ? true : false;
@@ -29,7 +33,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 //var groups = attrs.groupBy ? true : false;
 
                 var template = '<div class="multiselect-parent btn-group dropdown-multiselect" arrow-selector>';
-                template += '<button id="{{elementId}}_btn" ng-disabled=disabled type="button" class="dropdown-toggle" ng-class="settings.buttonClasses" ng-click="toggleDropdown()">{{getButtonText(true)}}&nbsp;<span class="caret"></span></button>';
+                template += '<button id="{{elementId}}_btn" type="button"  ng-disabled=disabled class="dropdown-toggle" ng-class="settings.buttonClasses" ng-click="toggleDropdown()">{{getButtonText(true)}}&nbsp;<span class="caret"></span></button>';
                 template += '<ul id="{{elementId}}-multiselect-wrapper" class="dropdown-menu dropdown-menu-form" ng-if="open" ng-style="{height : settings.scrollable ? settings.scrollableHeight : \'auto\' }" style="overflow: scroll; display: block;" ';
                 template += 'infinite-scroll="addMoreItems()" ';
                 template += 'infinite-scroll-container="getInfiniteScrollContainer()" ';
@@ -62,8 +66,8 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 template += '<ul class="group-list"  ng-class="openGroup ? \'group-open\' : \'\'" ng-show="!selectedGroupKey">';
                 //template += '<li class="multiselect-checkers"><a data-ng-click="selectAllInGroup(getPropertyForObject(option,settings.groupBy), !isCheckedGroup(getPropertyForObject(option,settings.groupBy))); checkedGroupAll = true" id="{{elementId}}_checkAll"><span ng-class="{\'checkbox-ok\': isCheckedGroup(getPropertyForObject(option,settings.groupBy))}" class="checkbox"></span>{{texts.checkAll}}</a>';
                 //template += '<li class="multiselect-checkers"><a data-ng-click="deselectAllInGroup(getPropertyForObject(option,settings.groupBy), !isCheckedGroup(getPropertyForObject(option,settings.groupBy))); checkedGroupAll = false" id="{{elementId}}_uncheckAll"><span class="checkbox uncheck-all"></span>{{texts.uncheckAll}}</a></li>';
-                template += '<li role="presentation" ng-repeat="option in options | filter: getPropertyForObject(option,settings.groupBy)">';
-                template += '<a id="{{elementId}}_option{{option.id}}" role="menuitem" tabindex="-1" ng-click="setSelectedItem(getPropertyForObject(option,settings.idProp))" tooltip="{{getPropertyForObject(option, settings.displayProp)}}"  ng-class="(getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit) ? \'shorten\' : \'\'" tooltip-enable="getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit">';
+                template += '<li role="presentation"  ng-repeat="option in options | filter: getPropertyForObject(option,settings.groupBy)" tooltip-enable="checkDisabled($index)" uib-tooltip="{{option.disabledTooltip}}>';
+                template += '<a id="{{elementId}}_option{{option.id}}" role="menuitem" tabindex="-1" ng-click="!checkDisabled($index) && setSelectedItem(getPropertyForObject(option,settings.idProp))" tooltip="{{getPropertyForObject(option, settings.displayProp)}}"  ng-class="{(getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit) ? \'shorten\' : \'\'; \'disabled\':checkDisabled($index)}" tooltip-enable="getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit">';
                 template += '<span data-ng-class="{\'checkbox-ok\': isChecked(getPropertyForObject(option,settings.idProp))}" class="checkbox"></span>{{getPropertyForObject(option, settings.displayProp)}}</a>';
                 template += '</li></ul>';
                 template += '</li>';
@@ -71,9 +75,9 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
 
                 //} else {
                 template += '<li ng-if="groups === false"><ul class="select-option-wrapper">';
-                template += '<li role="presentation" ng-repeat="option in options | filter: searchFilter | limitTo: itemsDisplayedInList track by $index " ng-class="{\'dropdown-multiselect-selected\':$index == selectedRow}">';
+                template += '<li role="presentation" ng-repeat="option in options | filter: searchFilter | limitTo: itemsDisplayedInList track by $index "   tooltip-enable="checkDisabled($index)" uib-tooltip="{{option.disabledTooltip}}" ng-class="{\'dropdown-multiselect-selected\':$index == selectedRow}">';
 
-                template += '<a id="{{elementId}}_option{{option.id}}" role="menuitem" href="javascript:void(0)" ng-click="setSelectedItem(getPropertyForObject(option,settings.idProp))" tooltip="{{getPropertyForObject(option, settings.displayProp)}}"  ng-class="(getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit) ? \'shorten\' : \'\'" tooltip-enable="getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit">';
+                template += '<a id="{{elementId}}_option{{option.id}}" role="menuitem" href="javascript:void(0)" ng-click="!checkDisabled($index) && setSelectedItem(getPropertyForObject(option,settings.idProp))" tooltip="{{getPropertyForObject(option, settings.displayProp)}}"  ng-class="{ \'shorten\':(getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit), \'disabled\':checkDisabled($index)}" tooltip-enable="getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit">';
 
                 if (checkboxes) {
                     template += '<div class="checkbox"><label><input class="checkboxInput" type="checkbox" ng-click="checkboxClick($event, getPropertyForObject(option,settings.idProp))" ng-checked="isChecked(getPropertyForObject(option,settings.idProp))" /> {{getPropertyForObject(option, settings.displayProp)}}</label></div></a>';
@@ -97,7 +101,6 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                     "Aug", "Sep", "Oct",
                     "Nov", "Dec"
                 ];
-
                 $scope.elementId = $attrs.id;
                 $scope.groups = $attrs.groupBy ? true : false;
                 $scope.selectedRow = -1;
@@ -151,7 +154,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                     allowGroupSelect: true,
                     smartButtonMaxItems: 0,
                     smartButtonTextConverter: angular.noop,
-                    tooltipNumLimit: 30,
+                    tooltipNumLimit: $scope.tooltipNumLimit ? $scope.tooltipNumLimit  : 30,
                     enableEmpty: false
                 };
 
@@ -270,7 +273,12 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
 
                     return groupValue;
                 };
-
+                $scope.checkDisabled = function(index) {
+                    if ($scope.disabledItems.indexOf($scope.options[index].dataBinding) > -1) {
+                        return true;
+                    }
+                    return false;
+                };
                 $scope.getButtonText = function (isBtnTitle) {
                     if ($scope.settings.dynamicTitle && $scope.selectedModel && ($scope.selectedModel.length > 0 || (angular.isObject($scope.selectedModel) && _.keys($scope.selectedModel).length > 0))) {
 
@@ -292,12 +300,32 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                                         var displayText = $scope.getPropertyForObject(optionItem, $scope.settings.displayProp);
                                         if(isBtnTitle) {
                                             if (optionItem.displayDate) {
-                                                var f, g;
-                                                "month" === optionItem.startDate ? (f = moment(f).startOf("month").format("MMM DD"),
-                                                        g = moment().format("MMM DD")) : "lastmonth" === optionItem.startDate ? (f = moment().utc().subtract(1, "month").startOf("month").format("MMM DD"),
-                                                            g = moment().utc().subtract(1, "month").endOf("month").format("MMM DD")) : (f = moment().utc().subtract(optionItem.startDate, "day").format("MMM DD"),
-                                                            g = moment().utc().subtract(optionItem.endDate, "day").format("MMM DD")),
-                                                    displayText += optionItem.startDate !== optionItem.endDate ? ": " + f + " - " + g : ": " + f
+                                                var startDate;
+                                                var endDate;
+                                                var startDayText
+                                                var now = new Date;
+                                                if (optionItem.startDate === 'month') {
+                                                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                                                    endDate = now;
+                                                }
+                                                else if (optionItem.startDate === 'lastmonth') {
+                                                    startDate = new Date(new Date().setDate(new Date().getDate() - optionItem.startDate));
+                                                    endDate = new Date(new Date().setDate(new Date().getDate() - optionItem.endDate));
+                                                }
+                                                else {
+                                                    startDate = new Date(new Date().setDate(new Date().getDate() - optionItem.startDate));
+                                                    startDayText = monthNames[startDate.getMonth()] + " " + startDate.getDate();
+                                                }
+                                                if (optionItem.startDate !== optionItem.endDate) {
+                                                    endDate = new Date(new Date().setDate(new Date().getDate() - optionItem.endDate));
+                                                    var endDateText = monthNames[endDate.getMonth()] + " " + endDate.getDate()
+                                                    startDayText = monthNames[startDate.getMonth()] + " " + startDate.getDate();
+                                                    displayText += ": " + startDayText +  " - " + endDateText;
+                                                }
+                                                else {
+                                                    startDayText = monthNames[startDate.getMonth()] + " " + startDate.getDate();
+                                                    displayText += ": " + startDayText;
+                                                }
                                             }
                                         }
                                     }
@@ -420,7 +448,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                     if ($scope.singleSelection) {
                         clearObject($scope.selectedModel);
                         angular.extend($scope.selectedModel, finalObj);
-                        $scope.externalEvents.onItemSelect(finalObj);
+                        $scope.externalEvents.onItemSelect(finalObj, $scope.index, $scope.dependency);
                         if ($scope.settings.closeOnSelect) {
                             $scope.open = false;
                         }
