@@ -24,7 +24,6 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 open: '=',
                 dependency: '=',
                 index: '=',
-                tooltipNumLimit: '=',
                 disabledItems: '='
             },
             template: function (element, attrs, scope) {
