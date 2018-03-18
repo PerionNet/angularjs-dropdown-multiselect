@@ -28,7 +28,6 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
             },
             template: function (element, attrs, scope) {
                 var checkboxes = attrs.checkboxes ? true : false;
-                var customdate = attrs.customdate ? true : false;
                 //var groups = attrs.groupBy ? true : false;
 
                 var template = '<div class="multiselect-parent btn-group dropdown-multiselect" arrow-selector>';
@@ -273,6 +272,10 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                     return groupValue;
                 };
                 $scope.checkDisabled = function(index) {
+                    if (!($scope.options[index].dataBinding)) {
+                        return false;
+                    }
+
                     if ($scope.disabledItems.indexOf($scope.options[index].dataBinding) > -1) {
                         return true;
                     }
