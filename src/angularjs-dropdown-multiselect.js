@@ -24,10 +24,12 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 open: '=',
                 dependency: '=',
                 index: '=',
+                tooltipNumLimit: '=',
                 disabledItems: '='
             },
             template: function (element, attrs, scope) {
                 var checkboxes = attrs.checkboxes ? true : false;
+                var customdate = attrs.customdate ? true : false;
                 //var groups = attrs.groupBy ? true : false;
 
                 var template = '<div class="multiselect-parent btn-group dropdown-multiselect" arrow-selector>';
@@ -64,7 +66,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 template += '<ul class="group-list"  ng-class="openGroup ? \'group-open\' : \'\'" ng-show="!selectedGroupKey">';
                 //template += '<li class="multiselect-checkers"><a data-ng-click="selectAllInGroup(getPropertyForObject(option,settings.groupBy), !isCheckedGroup(getPropertyForObject(option,settings.groupBy))); checkedGroupAll = true" id="{{elementId}}_checkAll"><span ng-class="{\'checkbox-ok\': isCheckedGroup(getPropertyForObject(option,settings.groupBy))}" class="checkbox"></span>{{texts.checkAll}}</a>';
                 //template += '<li class="multiselect-checkers"><a data-ng-click="deselectAllInGroup(getPropertyForObject(option,settings.groupBy), !isCheckedGroup(getPropertyForObject(option,settings.groupBy))); checkedGroupAll = false" id="{{elementId}}_uncheckAll"><span class="checkbox uncheck-all"></span>{{texts.uncheckAll}}</a></li>';
-                template += '<li role="presentation"  ng-repeat="option in options | filter: getPropertyForObject(option,settings.groupBy)" tooltip-enable="checkDisabled($index)" uib-tooltip="{{option.disabledTooltip}}>';
+                template += '<li role="presentation"  ng-repeat="option in options | filter: getPropertyForObject(option,settings.groupBy)"  tooltip-enable="checkDisabled($index)" uib-tooltip="{{option.disabledTooltip}}>';
                 template += '<a id="{{elementId}}_option{{option.id}}" role="menuitem" tabindex="-1" ng-click="!checkDisabled($index) && setSelectedItem(getPropertyForObject(option,settings.idProp))" tooltip="{{getPropertyForObject(option, settings.displayProp)}}"  ng-class="{(getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit) ? \'shorten\' : \'\'; \'disabled\':checkDisabled($index)}" tooltip-enable="getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit">';
                 template += '<span data-ng-class="{\'checkbox-ok\': isChecked(getPropertyForObject(option,settings.idProp))}" class="checkbox"></span>{{getPropertyForObject(option, settings.displayProp)}}</a>';
                 template += '</li></ul>';
@@ -73,7 +75,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
 
                 //} else {
                 template += '<li ng-if="groups === false"><ul class="select-option-wrapper">';
-                template += '<li role="presentation" ng-repeat="option in options | filter: searchFilter | limitTo: itemsDisplayedInList track by $index "   tooltip-enable="checkDisabled($index)" uib-tooltip="{{option.disabledTooltip}}" ng-class="{\'dropdown-multiselect-selected\':$index == selectedRow}">';
+                template += '<li role="presentation" ng-repeat="option in options | filter: searchFilter | limitTo: itemsDisplayedInList track by $index " tooltip-enable="checkDisabled($index)"  uib-tooltip="{{option.disabledTooltip}}" ng-class="{\'dropdown-multiselect-selected\':$index == selectedRow}">';
 
                 template += '<a id="{{elementId}}_option{{option.id}}" role="menuitem" href="javascript:void(0)" ng-click="!checkDisabled($index) && setSelectedItem(getPropertyForObject(option,settings.idProp))" tooltip="{{getPropertyForObject(option, settings.displayProp)}}"  ng-class="{ \'shorten\':(getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit), \'disabled\':checkDisabled($index)}" tooltip-enable="getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit">';
 
@@ -272,11 +274,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                     return groupValue;
                 };
                 $scope.checkDisabled = function(index) {
-                    if (!($scope.options[index].dataBinding)) {
-                        return false;
-                    }
-
-                    if ($scope.disabledItems.indexOf($scope.options[index].dataBinding) > -1) {
+                    if ($scope.disabledItems && $scope.disabledItems.indexOf($scope.options[index].dataBinding) > -1) {
                         return true;
                     }
                     return false;
