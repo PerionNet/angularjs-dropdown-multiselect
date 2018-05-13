@@ -2,7 +2,9 @@
 
 angular.module('exampleApp', [
     'ngRoute',
+    'focusOn',
     'angularjs-dropdown-multiselect',
+    'ngStorage',
     'hljs',
 	'ui.bootstrap'
 ]).
