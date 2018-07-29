@@ -68,6 +68,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 //template += '<li class="multiselect-checkers"><a data-ng-click="deselectAllInGroup(getPropertyForObject(option,settings.groupBy), !isCheckedGroup(getPropertyForObject(option,settings.groupBy))); checkedGroupAll = false" id="{{elementId}}_uncheckAll"><span class="checkbox uncheck-all"></span>{{texts.uncheckAll}}</a></li>';
                 template += '<li role="presentation"  ng-repeat="option in options | filter: getPropertyForObject(option,settings.groupBy)"  tooltip-enable="checkDisabled($index)" uib-tooltip="{{option.disabledTooltip}}>';
                 template += '<a id="{{elementId}}_option{{option.id}}" role="menuitem" tabindex="-1" ng-click="!checkDisabled($index) && setSelectedItem(getPropertyForObject(option,settings.idProp))" tooltip="{{getPropertyForObject(option, settings.displayProp)}}"  ng-class="{\'shorten\':(getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit), \'disabled\':checkDisabled($index)}" tooltip-enable="getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit">';
+
                 template += '<span data-ng-class="{\'checkbox-ok\': isChecked(getPropertyForObject(option,settings.idProp))}" class="checkbox"></span>{{getPropertyForObject(option, settings.displayProp)}}</a>';
                 template += '</li></ul>';
                 template += '</li>';
