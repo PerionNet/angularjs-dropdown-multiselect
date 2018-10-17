@@ -25,7 +25,8 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 dependency: '=',
                 index: '=',
                 tooltipNumLimit: '=',
-                disabledItems: '='
+                disabledItems: '=',
+                list: '='
             },
             template: function (element, attrs, scope) {
                 var checkboxes = attrs.checkboxes ? true : false;
@@ -39,14 +40,19 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 template += 'infinite-scroll-container="getInfiniteScrollContainer()" ';
                 template += 'infinite-scroll-distance="1" ';
                 template += 'infinite-scroll-immediate-check="false" >';
+                template += '<div ng-if="list"  class="list-input-inst">After each typetag, click "Add" or press enter.</div>';
+
+
+                template += '<li ng-if="list" class="dropdown-list-input" xmlns="http://www.w3.org/1999/html"><input id="{{elementId}}_input" ng-keypress="submitListVal($event, listInput)" type="text" class="form-control search-filter" style="width: 100%;" ng-model="listInput" placeholder="{{texts.buttonAllDefaultText}}" focus-on="focusInput"/><span class="add-list-item" ng-click="list.add(listInput, this.parentElement);">Add</span></li>';
+                template += '<ul class="dropdown-list"><li class="dropdown-list-item" ng-repeat="val in list.get()"><a><span ng-click="list.remove($index)" class="delete-item-list-btn"></span>{{val}}</a></li> </ul>';
                 template += '<li ng-show="settings.groupBy && settings.showModes" class="group-toggle"><a class="toggle-text" ng-class="{toggleTextSelected: selectedGroupKey}" ng-click="setGroupSelectOption(settings.groupKey)">{{settings.groupKey}} Mode</a>';
                 template += '<a class="toggle-text" ng-class="{toggleTextSelected: !selectedGroupKey}" ng-click="setGroupSelectOption(settings.displayProp)">{{settings.displayProp}} Mode</a></li>';
                 template += '<li ng-show="settings.enableSearch" class="dropdown-search-holder"><div class="dropdown-header"><input ng-change="clearSelectedRow()" id="{{elementId}}_search" type="text" class="form-control search-filter" style="width: 100%;" ng-model="searchFilter" placeholder="{{texts.searchPlaceholder}}" focus-on="focusInput"/></li>';
                 template += '<li ng-show="settings.enableSearch" class="divider"></li>';
                 template += '<li ng-show="settings.enableEmpty"></li>';
-                template += '<li ng-hide="!settings.showCheckAll || settings.selectionLimit > 0"><a data-ng-click="selectAll(); checkedAll = true" id="{{elementId}}_checkAll"><span ng-class="{\'checkbox-ok\': isCheckedAll()}" class="checkbox"></span>{{texts.checkAll}}</a>';
+                template += '<li ng-if="!settings.list" ng-hide="!settings.showCheckAll || settings.selectionLimit > 0"><a data-ng-click="selectAll(); checkedAll = true" id="{{elementId}}_checkAll"><span ng-class="{\'checkbox-ok\': isCheckedAll()}" class="checkbox"></span>{{texts.checkAll}}</a>';
                 template += '<li ng-show="settings.showUncheckAll" class="uncheckAll-separator"><a data-ng-click="deselectAll(); checkedAll = false" id="{{elementId}}_uncheckAll"><span class="checkbox uncheck-all"></span>{{texts.uncheckAll}}</a></li>';
-                template += '<li ng-hide="(!settings.showCheckAll || settings.selectionLimit > 0) && !settings.showUncheckAll" class="divider"></li>';
+                template += '<li ng-if="!settings.list" ng-hide="(!settings.showCheckAll || settings.selectionLimit > 0) && !settings.showUncheckAll" class="divider"></li>';
                 template += '<li class="divider" ng-show="settings.selectionLimit > 1"></li>';
                 template += '<li role="presentation" ng-show="settings.selectionLimit > 1" class="selection-indicator"><a role="menuitem">{{selectedModel.length}} {{texts.selectionOf}} {{settings.selectionLimit}} {{texts.selectionCount}}</a></li>';
 
@@ -75,7 +81,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 template += '</ul></li>';
 
                 //} else {
-                template += '<li ng-if="groups === false"><ul class="select-option-wrapper">';
+                template += '<li ng-if="groups === false && !list"><ul class="select-option-wrapper">';
                 template += '<li role="presentation" ng-repeat="option in options | filter: searchFilter | limitTo: itemsDisplayedInList track by $index " tooltip-enable="checkDisabled($index)"  uib-tooltip="{{option.disabledTooltip}}" ng-class="{\'dropdown-multiselect-selected\':$index == selectedRow}">';
 
                 template += '<a id="{{elementId}}_option{{option.id}}" role="menuitem" href="javascript:void(0)" ng-click="!checkDisabled($index) && setSelectedItem(getPropertyForObject(option,settings.idProp))" tooltip="{{getPropertyForObject(option, settings.displayProp)}}"  ng-class="{ \'shorten\':(getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit), \'disabled\':checkDisabled($index)}" tooltip-enable="getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit">';
@@ -96,6 +102,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 element.html(template);
             },
             link: function ($scope, $element, $attrs) {
+                $scope.listInput = "";
                 var monthNames = [
                     "Jan", "Feb", "Mar",
                     "Apr", "May", "Jun", "Jul",
@@ -112,6 +119,30 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
 
                 var $dropdownTrigger = $element.children()[0];
 
+                if ($scope.list) {
+                    $scope.list = {
+                        listVal:[],
+                        add: function(val, el) {
+                            val = val.replace(/\s\s+/g, ' ');
+                            var items = val.split(" ");
+                            for (var i=0; i<items.length; i++) {
+                                this.listVal.push(items[i]);
+                            }
+                            //remove duplicates
+                            this.listVal = this.listVal.filter(function(elem, index, self) {
+                                return index === self.indexOf(elem);
+                            });
+                            el.value = '';å
+                        },
+                        remove: function(idx) {
+                            this.listVal.splice(idx, 1);
+                        },
+                        get: function() {
+                            return this.listVal;
+                        }
+                    }
+                }
+
                 $scope.toggleDropdown = function () {
                     $scope.open = !$scope.open;
                     if ($scope.open) {
@@ -124,6 +155,12 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                     $event.stopImmediatePropagation();
                 };
 
+
+                $scope.submitListVal = function(keyEvent, value) {
+                    if (keyEvent.which == 13) {
+                        $scope.list.add(value, keyEvent.currentTarget);
+                    }
+                }
                 $scope.externalEvents = {
                     onItemSelect: angular.noop,
                     onItemDeselect: angular.noop,
@@ -281,15 +318,23 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                     return false;
                 };
                 $scope.getButtonText = function (isBtnTitle) {
+                    if ($scope.list && $scope.list.get().length) {
+                        var itemsText = [];
+                        itemsText = $scope.list.get().slice(0, 2);
+                        itemsText = _.uniq(itemsText);
+                        itemsText.push('...');
+                        return itemsText.join(', ');
+                    }
+
                     if ($scope.settings.dynamicTitle && $scope.selectedModel && ($scope.selectedModel.length > 0 || (angular.isObject($scope.selectedModel) && _.keys($scope.selectedModel).length > 0))) {
 
                         if ($scope.settings.smartButtonMaxItems > 0) {
                             var itemsText = [];
 
-                            if (($scope.options.length === $scope.selectedModel.length) && ($scope.texts.buttonAllDefaultText)) {
+                            if (($scope.options && $scope.options.length === $scope.selectedModel.length) && ($scope.texts.buttonAllDefaultText)) {
                                 return $scope.texts.buttonAllDefaultText;
                             }
-                            if ($scope.options[$scope.selectedModel.id] && $scope.options[$scope.selectedModel.id].value === "custom") {
+                            if ($scope.options && $scope.options[$scope.selectedModel.id] && $scope.options[$scope.selectedModel.id].value === "custom") {
                                 return $scope.texts.buttonCustomDateText;
                             }
 
@@ -488,7 +533,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
 
                 $scope.isCheckedAll = function () {
                     var length = 0;
-                    length = $scope.orderedItems ? $scope.orderedItems.length : $scope.options.length;
+                    length = $scope.orderedItems ? $scope.orderedItems.length : $scope.options ? $scope.options.length : [];
                     return ($scope.selectedModel.length === length)
                 };
 
