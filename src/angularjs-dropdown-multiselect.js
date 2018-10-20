@@ -26,7 +26,8 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 index: '=',
                 tooltipNumLimit: '=',
                 disabledItems: '=',
-                list: '='
+                list: '=',
+                listItemMaxChar: '='
             },
             template: function (element, attrs, scope) {
                 var checkboxes = attrs.checkboxes ? true : false;
@@ -43,8 +44,8 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 template += '<div ng-if="list"  class="list-input-inst">After each typetag, click "Add" or press enter.</div>';
 
 
-                template += '<li ng-if="list" class="dropdown-list-input" xmlns="http://www.w3.org/1999/html"><input id="{{elementId}}_input" ng-keypress="submitListVal($event, listInput)" type="text" class="form-control search-filter" style="width: 100%;" ng-model="listInput" placeholder="{{texts.buttonAllDefaultText}}" focus-on="focusInput"/><span class="add-list-item" ng-click="list.add(listInput, this.parentElement);">Add</span></li>';
-                template += '<ul class="dropdown-list"><li class="dropdown-list-item" ng-repeat="val in list.get()"><a><span ng-click="list.remove($index)" class="delete-item-list-btn"></span>{{val}}</a></li> </ul>';
+                template += '<li ng-if="list" class="dropdown-list-input" xmlns="http://www.w3.org/1999/html"><input id="{{elementId}}_input" ng-keypress="submitListVal($event, listInput)" type="text" class="form-control search-filter" style="width: 100%;" ng-model="listInput" placeholder="{{texts.buttonAllDefaultText}}" focus-on="focusInput"/><span class="add-list-item" ng-click="list.add(listInput, $event);">Add</span></li>';
+                template += '<ul class="dropdown-list"><li class="dropdown-list-item" ng-repeat="val in list.get()"><a><span ng-click="list.remove($index)" class="delete-item-list-btn"></span><span class="list-item-text">{{val}}</span></a></li> </ul>';
                 template += '<li ng-show="settings.groupBy && settings.showModes" class="group-toggle"><a class="toggle-text" ng-class="{toggleTextSelected: selectedGroupKey}" ng-click="setGroupSelectOption(settings.groupKey)">{{settings.groupKey}} Mode</a>';
                 template += '<a class="toggle-text" ng-class="{toggleTextSelected: !selectedGroupKey}" ng-click="setGroupSelectOption(settings.displayProp)">{{settings.displayProp}} Mode</a></li>';
                 template += '<li ng-show="settings.enableSearch" class="dropdown-search-holder"><div class="dropdown-header"><input ng-change="clearSelectedRow()" id="{{elementId}}_search" type="text" class="form-control search-filter" style="width: 100%;" ng-model="searchFilter" placeholder="{{texts.searchPlaceholder}}" focus-on="focusInput"/></li>';
@@ -126,13 +127,15 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                             val = val.replace(/\s\s+/g, ' ');
                             var items = val.split(" ");
                             for (var i=0; i<items.length; i++) {
+                                var newItem = items[i].substring(0, $scope.listItemMaxChar - 1);
                                 this.listVal.push(items[i]);
                             }
                             //remove duplicates
                             this.listVal = this.listVal.filter(function(elem, index, self) {
                                 return index === self.indexOf(elem);
                             });
-                            el.value = '';å
+                            var input = el && el.value ? el : el.target.parentElement.querySelector('input');
+                            input.value = '';
                         },
                         remove: function(idx) {
                             this.listVal.splice(idx, 1);
@@ -159,6 +162,10 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 $scope.submitListVal = function(keyEvent, value) {
                     if (keyEvent.which == 13) {
                         $scope.list.add(value, keyEvent.currentTarget);
+                    } else if (keyEvent.which != 46 && keyEvent.which != 80){
+                        if (value.length > $scope.listItemMaxChar - 1) {
+                            keyEvent.preventDefault();
+                        }
                     }
                 }
                 $scope.externalEvents = {
