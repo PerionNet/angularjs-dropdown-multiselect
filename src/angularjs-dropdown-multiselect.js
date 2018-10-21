@@ -44,8 +44,8 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 template += '<div ng-if="list"  class="list-input-inst">After each typetag, click "Add" or press enter.</div>';
 
 
-                template += '<li ng-if="list" class="dropdown-list-input" xmlns="http://www.w3.org/1999/html"><input id="{{elementId}}_input" ng-keypress="submitListVal($event, listInput)" type="text" class="form-control search-filter" style="width: 100%;" ng-model="listInput" placeholder="{{texts.buttonAllDefaultText}}" focus-on="focusInput"/><span class="add-list-item" ng-click="list.add(listInput, $event);">Add</span></li>';
-                template += '<ul class="dropdown-list"><li class="dropdown-list-item" ng-repeat="val in list.get()"><a><span ng-click="list.remove($index)" class="delete-item-list-btn"></span><span class="list-item-text">{{val}}</span></a></li> </ul>';
+                template += '<li ng-if="list" class="dropdown-list-input" xmlns="http://www.w3.org/1999/html"><input id="{{elementId}}_input" ng-keypress="submitListVal($event)" type="text" class="form-control search-filter" style="width: 100%;" ng-model="listInput" placeholder="{{texts.buttonAllDefaultText}}" focus-on="focusInput"/><span class="add-list-item" ng-click="listItems.add(listInput, $event);">Add</span></li>';
+                template += '<ul class="dropdown-list"><li class="dropdown-list-item" ng-repeat="val in listItems.get()"><a><span ng-click="listItems.remove($index)" class="delete-item-list-btn"></span><span class="list-item-text">{{val}}</span></a></li> </ul>';
                 template += '<li ng-show="settings.groupBy && settings.showModes" class="group-toggle"><a class="toggle-text" ng-class="{toggleTextSelected: selectedGroupKey}" ng-click="setGroupSelectOption(settings.groupKey)">{{settings.groupKey}} Mode</a>';
                 template += '<a class="toggle-text" ng-class="{toggleTextSelected: !selectedGroupKey}" ng-click="setGroupSelectOption(settings.displayProp)">{{settings.displayProp}} Mode</a></li>';
                 template += '<li ng-show="settings.enableSearch" class="dropdown-search-holder"><div class="dropdown-header"><input ng-change="clearSelectedRow()" id="{{elementId}}_search" type="text" class="form-control search-filter" style="width: 100%;" ng-model="searchFilter" placeholder="{{texts.searchPlaceholder}}" focus-on="focusInput"/></li>';
@@ -121,7 +121,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 var $dropdownTrigger = $element.children()[0];
 
                 if ($scope.list) {
-                    $scope.list = {
+                    $scope.listItems = {
                         listVal:[],
                         add: function(val, el) {
                             val = val.replace(/\s\s+/g, ' ');
@@ -134,8 +134,12 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                             this.listVal = this.listVal.filter(function(elem, index, self) {
                                 return index === self.indexOf(elem);
                             });
-                            var input = el && el.value ? el : el.target.parentElement.querySelector('input');
-                            input.value = '';
+                            if (el) {
+                                var input = el && typeof el.value === "string" ? el : el.target && el.target.parentElement ? el.target.parentElement.querySelector('input') : null;
+                                if (input) {
+                                    input.value = '';
+                                }
+                            }
                         },
                         remove: function(idx) {
                             this.listVal.splice(idx, 1);
@@ -143,6 +147,11 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                         get: function() {
                             return this.listVal;
                         }
+                    }
+                    if ($scope.selectedModel) {
+                        $scope.selectedModel.forEach(function(item) {
+                            $scope.listItems.add(item);
+                        })
                     }
                 }
 
@@ -159,9 +168,10 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 };
 
 
-                $scope.submitListVal = function(keyEvent, value) {
+                $scope.submitListVal = function(keyEvent) {
+                    var value = keyEvent.currentTarget.value;
                     if (keyEvent.which == 13) {
-                        $scope.list.add(value, keyEvent.currentTarget);
+                        $scope.listItems.add(value, keyEvent.target);
                     } else if (keyEvent.which != 46 && keyEvent.which != 80){
                         if (value.length > $scope.listItemMaxChar - 1) {
                             keyEvent.preventDefault();
@@ -325,9 +335,9 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                     return false;
                 };
                 $scope.getButtonText = function (isBtnTitle) {
-                    if ($scope.list && $scope.list.get().length) {
+                    if ($scope.list && $scope.listItems.get().length) {
                         var itemsText = [];
-                        itemsText = $scope.list.get().slice(0, 2);
+                        itemsText = $scope.listItems.get().slice(0, 2);
                         itemsText = _.uniq(itemsText);
                         itemsText.push('...');
                         return itemsText.join(', ');
