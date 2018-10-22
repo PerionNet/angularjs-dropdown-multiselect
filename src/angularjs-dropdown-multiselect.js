@@ -27,7 +27,8 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 tooltipNumLimit: '=',
                 disabledItems: '=',
                 list: '=',
-                listItemMaxChar: '='
+                listItemMaxChar: '=',
+                listMsg: '='
             },
             template: function (element, attrs, scope) {
                 var checkboxes = attrs.checkboxes ? true : false;
@@ -41,7 +42,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 template += 'infinite-scroll-container="getInfiniteScrollContainer()" ';
                 template += 'infinite-scroll-distance="1" ';
                 template += 'infinite-scroll-immediate-check="false" >';
-                template += '<div ng-if="list"  class="list-input-inst">After each Type Tag, click "Add" or press enter.</div>';
+                template += '<div ng-if="list && listMsg"  class="list-input-inst">{{listMsg}}</div>';
 
 
                 template += '<li ng-if="list" class="dropdown-list-input" xmlns="http://www.w3.org/1999/html"><input id="{{elementId}}_input" ng-keypress="submitListVal($event)" type="text" class="form-control search-filter" style="width: 100%;" ng-model="listInput" placeholder="{{texts.buttonAllDefaultText}}" focus-on="focusInput"/><span class="add-list-item" ng-click="listItems.add(listInput, $event);">Add</span></li>';
