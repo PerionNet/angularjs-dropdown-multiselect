@@ -41,7 +41,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 template += 'infinite-scroll-container="getInfiniteScrollContainer()" ';
                 template += 'infinite-scroll-distance="1" ';
                 template += 'infinite-scroll-immediate-check="false" >';
-                template += '<div ng-if="list"  class="list-input-inst">After each typetag, click "Add" or press enter.</div>';
+                template += '<div ng-if="list"  class="list-input-inst">After each Type Tag, click "Add" or press enter.</div>';
 
 
                 template += '<li ng-if="list" class="dropdown-list-input" xmlns="http://www.w3.org/1999/html"><input id="{{elementId}}_input" ng-keypress="submitListVal($event)" type="text" class="form-control search-filter" style="width: 100%;" ng-model="listInput" placeholder="{{texts.buttonAllDefaultText}}" focus-on="focusInput"/><span class="add-list-item" ng-click="listItems.add(listInput, $event);">Add</span></li>';
@@ -122,16 +122,15 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
 
                 if ($scope.list) {
                     $scope.listItems = {
-                        listVal:[],
                         add: function(val, el) {
                             val = val.replace(/\s\s+/g, ' ');
                             var items = val.split(" ");
                             for (var i=0; i<items.length; i++) {
                                 var newItem = items[i].substring(0, $scope.listItemMaxChar - 1);
-                                this.listVal.push(items[i]);
+                                $scope.selectedModel.push(items[i]);
                             }
                             //remove duplicates
-                            this.listVal = this.listVal.filter(function(elem, index, self) {
+                            $scope.selectedModel = $scope.selectedModel.filter(function(elem, index, self) {
                                 return index === self.indexOf(elem);
                             });
                             if (el) {
@@ -142,17 +141,17 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                             }
                         },
                         remove: function(idx) {
-                            this.listVal.splice(idx, 1);
+                            $scope.selectedModel.splice(idx, 1);
                         },
                         get: function() {
-                            return this.listVal;
+                            return $scope.selectedModel;
                         }
                     }
-                    if ($scope.selectedModel) {
+                    /*if ($scope.selectedModel) {
                         $scope.selectedModel.forEach(function(item) {
-                            $scope.listItems.add(item);
+                          $scope.listItems.add(item);
                         })
-                    }
+                    }*/
                 }
 
                 $scope.toggleDropdown = function () {
