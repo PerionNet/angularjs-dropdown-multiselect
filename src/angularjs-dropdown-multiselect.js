@@ -28,6 +28,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 disabledItems: '=',
                 list: '=',
                 listItemMaxChar: '=',
+                listMaxNumOfItems: '=',
                 listMsg: '='
             },
             template: function (element, attrs, scope) {
@@ -45,7 +46,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 template += '<div ng-if="list && listMsg"  class="list-input-inst">{{listMsg}}</div>';
 
 
-                template += '<li ng-if="list" class="dropdown-list-input" xmlns="http://www.w3.org/1999/html"><input id="{{elementId}}_input" ng-keypress="submitListVal($event)" type="text" class="form-control search-filter" style="width: 100%;" ng-model="listInput" placeholder="{{texts.buttonAllDefaultText}}" focus-on="focusInput"/><span class="add-list-item" ng-click="listItems.add(listInput, $event);">Add</span></li>';
+                template += '<li ng-if="list" class="dropdown-list-input" xmlns="http://www.w3.org/1999/html"><input id="{{elementId}}_input" ng-keypress="submitListVal($event)" type="text" class="form-control search-filter" style="width: 100%;" ng-model="listInput" placeholder="{{texts.buttonAllDefaultText}}" focus-on="focusInput"/><span class="add-list-item" ng-class="{disabled: selectedModel.length === listMaxNumOfItems - 1}" ng-click="listItems.add(listInput, $event);">Add</span></li>';
                 template += '<ul class="dropdown-list"><li class="dropdown-list-item" ng-repeat="val in listItems.get()"><a><span ng-click="listItems.remove($index)" class="delete-item-list-btn"></span><span class="list-item-text">{{val}}</span></a></li> </ul>';
                 template += '<li ng-show="settings.groupBy && settings.showModes" class="group-toggle"><a class="toggle-text" ng-class="{toggleTextSelected: selectedGroupKey}" ng-click="setGroupSelectOption(settings.groupKey)">{{settings.groupKey}} Mode</a>';
                 template += '<a class="toggle-text" ng-class="{toggleTextSelected: !selectedGroupKey}" ng-click="setGroupSelectOption(settings.displayProp)">{{settings.displayProp}} Mode</a></li>';
@@ -124,22 +125,35 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 if ($scope.list) {
                     $scope.listItems = {
                         add: function(val, el) {
+                            var removeText = function(el) {
+                                if (el) {
+                                    var input = el && typeof el.value === "string" ? el : el.target && el.target.parentElement ? el.target.parentElement.querySelector('input') : null;
+                                    if (input) {
+                                        input.value = '';
+                                    }
+                                }
+                            };
+                            if ($scope.selectedModel.length === $scope.listMaxNumOfItems - 1) {
+                                return;
+                            }
                             val = val.replace(/\s\s+/g, ' ');
                             var items = val.split(" ");
                             for (var i=0; i<items.length; i++) {
-                                var newItem = items[i].substring(0, $scope.listItemMaxChar - 1);
-                                $scope.selectedModel.push(items[i]);
+                                if ($scope.selectedModel.length === $scope.listMaxNumOfItems - 1) {
+                                    removeText(el);
+                                    return;
+                                }
+                                if (items[i].length <= $scope.listItemMaxChar) {
+                                    $scope.selectedModel.push(items[i]);
+                                } else {
+                                    continue;
+                                }
                             }
                             //remove duplicates
                             $scope.selectedModel = $scope.selectedModel.filter(function(elem, index, self) {
                                 return index === self.indexOf(elem);
                             });
-                            if (el) {
-                                var input = el && typeof el.value === "string" ? el : el.target && el.target.parentElement ? el.target.parentElement.querySelector('input') : null;
-                                if (input) {
-                                    input.value = '';
-                                }
-                            }
+                            removeText(el);
                         },
                         remove: function(idx) {
                             $scope.selectedModel.splice(idx, 1);
@@ -177,7 +191,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                             keyEvent.preventDefault();
                         }
                     }
-                }
+                };
                 $scope.externalEvents = {
                     onItemSelect: angular.noop,
                     onItemDeselect: angular.noop,
