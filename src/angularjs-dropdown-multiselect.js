@@ -192,7 +192,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                         last = value.substr(value.length - 1) == ' ' ? '' : (last ? last[last.length-1] : '');
                         if (last.length >= $scope.listItemMaxChar  && keyEvent.which != 32) {
                             keyEvent.preventDefault();
-                        }å
+                        }
                     }
                 };
                 $scope.externalEvents = {
