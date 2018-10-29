@@ -205,7 +205,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 };
 
                 $scope.settings = {
-                    dynami‎cTitle: true,
+                    dynamicTitle: true,
                     scrollable: false,
                     scrollableHeight: '300px',
                     closeOnBlur: true,
