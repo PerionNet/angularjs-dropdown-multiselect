@@ -137,7 +137,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                                 return;
                             }
                             val = val.replace(/\s\s+/g, ' ');
-                            var items = val.split(" ");
+                            var items = val.split(/\s+/);
                             for (var i=0; i<items.length; i++) {
                                 if ($scope.selectedModel.length === $scope.listMaxNumOfItems - 1) {
                                     removeText(el);
@@ -187,9 +187,12 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                     if (keyEvent.which == 13) {
                         $scope.listItems.add(value, keyEvent.target);
                     } else if (keyEvent.which != 46 && keyEvent.which != 80){
-                        if (value.length > $scope.listItemMaxChar - 1) {
+                        //check number of chars from last whitespace
+                        var last = value.match(/\S+/g);
+                        last = value.substr(value.length - 1) == ' ' ? '' : (last ? last[last.length-1] : '');
+                        if (last.length >= $scope.listItemMaxChar  && keyEvent.which != 32) {
                             keyEvent.preventDefault();
-                        }
+                        }å
                     }
                 };
                 $scope.externalEvents = {
