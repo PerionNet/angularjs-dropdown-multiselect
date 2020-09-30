@@ -11,6 +11,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 selectedModel: '=',
                 selectedTempModel: '=',
                 options: '=',
+                disabledTooltip: '=',
                 extraSettings: '=',
                 events: '=',
                 disabled: '=',
@@ -87,7 +88,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 template += '<li ng-if="groups === false && !list"><ul class="select-option-wrapper">';
                 template += '<li role="presentation" ng-repeat="option in options | filter: searchFilter | limitTo: itemsDisplayedInList track by $index " tooltip-enable="checkDisabled($index)"  uib-tooltip="{{option.disabledTooltip}}" ng-class="{\'dropdown-multiselect-selected\':$index == selectedRow}">';
 
-                template += '<a id="{{elementId}}_option{{option.id}}" role="menuitem" href="javascript:void(0)" ng-click="!checkDisabled($index) && setSelectedItem(getPropertyForObject(option,settings.idProp))" tooltip="{{getPropertyForObject(option, settings.displayProp)}}"  ng-class="{ \'shorten\':(getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit), \'disabled\':checkDisabled($index)}" tooltip-enable="getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit">';
+                template += '<a id="{{elementId}}_option{{option.id}}" role="menuitem" href="javascript:void(0)" ng-click="!checkDisabled($index) && setSelectedItem(getPropertyForObject(option,settings.idProp))" tooltip="{{getPropertyForObject(option, settings.displayProp)}}" tooltip-enable="checkDisabled($index)" uib-tooltip="{{disabledTooltip}}" ng-class="{ \'shorten\':(getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit), \'disabled\':checkDisabled($index)}" tooltip-enable="getPropertyForObject(option, settings.displayProp).length > settings.tooltipNumLimit">';
 
                 if (checkboxes) {
                     template += '<div class="checkbox"><label><input class="checkboxInput" type="checkbox" ng-click="checkboxClick($event, getPropertyForObject(option,settings.idProp))" ng-checked="isChecked(getPropertyForObject(option,settings.idProp))" /> {{getPropertyForObject(option, settings.displayProp)}}</label></div></a>';
@@ -346,7 +347,8 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                     return groupValue;
                 };
                 $scope.checkDisabled = function(index) {
-                    if ($scope.disabledItems && $scope.disabledItems.indexOf($scope.options[index].dataBinding) > -1) {
+                  var item = $scope.options[index] && $scope.options[index].dataBinding ? $scope.options[index].dataBinding : $scope.options[index].id;
+                    if ($scope.disabledItems && $scope.disabledItems.indexOf(item) > -1) {
                         return true;
                     }
                     return false;
@@ -458,9 +460,8 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 $scope.selectAll = function (inGroup) {
                     $scope.deselectAll(false);
                     $scope.externalEvents.onSelectAll();
-
                     angular.forEach($scope.options, function (value) {
-                        $scope.setSelectedItem(value[$scope.settings.idProp], true);
+                        $scope.setSelectedItem(value[$scope.settings.idProp], true, true);
                     });
                 };
 
@@ -515,7 +516,10 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
 
                 };
 
-                $scope.setSelectedItem = function (id, dontRemove) {
+                $scope.setSelectedItem = function (id, dontRemove, isAll) {
+                  if ($scope.disabledItems && $scope.disabledItems.indexOf(id) >= 0) {
+                    return;
+                  }
                     var findObj = getFindObj(id);
                     var finalObj = null;
 
@@ -546,10 +550,14 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
 
                     if (!dontRemove && exists) {
                         $scope.selectedModel.splice(_.findIndex($scope.selectedModel, findObj), 1);
+                      if (!isAll) {
                         $scope.externalEvents.onItemDeselect(findObj);
+                      }
                     } else if (!exists && ($scope.settings.selectionLimit === 0 || $scope.selectedModel.length < $scope.settings.selectionLimit)) {
                         $scope.selectedModel.push(finalObj);
-                        $scope.externalEvents.onItemSelect(finalObj);
+                        if (!isAll) {
+                          $scope.externalEvents.onItemSelect(finalObj);
+                        }
                     }
                     if ($scope.settings.closeOnSelect) {
                         $scope.open = false;
