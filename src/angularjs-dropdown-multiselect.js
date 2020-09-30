@@ -516,7 +516,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 };
 
                 $scope.setSelectedItem = function (id, dontRemove, isAll) {
-                  if ($scope.disabledItems.indexOf(id) >= 0) {
+                  if ($scope.disabledItems && $scope.disabledItems.indexOf(id) >= 0) {
                     return;
                   }
                     var findObj = getFindObj(id);
